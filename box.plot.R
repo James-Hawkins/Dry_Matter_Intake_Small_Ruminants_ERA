@@ -27,7 +27,7 @@ gg.bp.dmi.0 <- gg.bp.0   %>%   +
 gg.bp.dmi.0
 
 gg.bp.bw.0 <- gg.bp.0   %>%   +
-  geom_boxplot(s.rums[ !is.na(s.rums$species.ndf.age) , ] , mapping = aes(x = species.ndf, y = bw_kg ) )  + 
+  geom_boxplot(mapping = aes(x = species.ndf, y = bw_kg ) )  + 
  ylab('\nBodyweight(kg)')
 
 
@@ -50,18 +50,15 @@ gg.bp.adg.0
 # Plot prep
 {
 
- 
-  
-gg.bp.adg <- gg.bp.adg.0   %>%   + theme(  axis.text.x = element_blank())
-gg.bp.bw <- gg.bp.bw.0     %>%   + theme(  axis.text.x = element_blank())
+
+ gg.bp.adg <- gg.bp.adg.0   
+gg.bp.bw <- gg.bp.bw.0     
 gg.bp.ndf <- gg.bp.ndf.0   %>%   + theme(  axis.text.x = element_blank())
 gg.bp.dmi <- gg.bp.dmi.0     %>%   + theme(  axis.text.x = element_blank())
 
-  
+
   
 }
-
-
 
 gg.bp.all.0 <- ggarrange(
   
@@ -72,12 +69,16 @@ gg.bp.all.0 <- ggarrange(
   
   , nrow = 2
 , ncol = 2
+
+, heights = c(1 , 1.38)
+, labels = c('a','b','c','d')
+
 )
 
 gg.bp.dpi <- 1500
 gg.bp.glob.scalar <- 0.625
-gg.bp.width.sp <- 3.25 * gg.bp.glob.scalar
-gg.bp.height.sp  <- 11.5 * gg.bp.glob.scalar
+gg.bp.width.sp <- 9 * gg.bp.glob.scalar
+gg.bp.height.sp  <- 8.2* gg.bp.glob.scalar
 
 filename.bp = 'Figures.out/boxplots.jpeg'
 
