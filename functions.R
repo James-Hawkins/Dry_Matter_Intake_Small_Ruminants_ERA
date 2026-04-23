@@ -473,13 +473,15 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
     , data =  data
     
     , family = Gaussian()
-    ,  control = boost_control(mstop =   mstop , nu = nu)
+   # ,  control = boost_control(mstop =   mstop , nu = nu)
     , center = FALSE
     
   )
 
-  # cvm <- cvrisk(mod.b)
- # mstop <- mstop(cvm)
+  #cv_folds <- cv(model.weights(mod.0 ), type = "kfold", k = 5)
+  
+   cvm <- cvrisk(mod.0  )
+   mstop.opt <- mstop(cvm)
   
   x.vars <- xtract.x.vars(  form )
   cols.2.include <- c( x.vars )
@@ -495,7 +497,7 @@ if (  family == mod.fam.gaussian ){
     , data =  data
     
     , family = Gaussian()
-    ,  control = boost_control(mstop =   mstop , nu = nu)
+    ,  control = boost_control(mstop =   mstop.opt , nu = nu)
     , center = FALSE
     
   )
@@ -571,7 +573,6 @@ test <- function(){
   
   return (s.rums)
 }
-
 
 
 gen.formula.label.1r <<- function(  form.obj ){
@@ -715,7 +716,7 @@ return.x.vars <- function(  form.obj , data.set.type ,r ){
 
 gen.complete.cases <<- function( id.list , formla ){
   
-  # Test function: id.list <-  cur.id.list ; formla <- cur.form 
+  # Test function: id.list <-  cur.id.list ; formla <- formula
 
   formla.list <- all.vars(formla) 
 
@@ -1142,6 +1143,240 @@ if ( vers == "pmetric") {
 
 return (gg.dat )
 
+}
+
+
+gen.gg.df.sp.specific <<- function(  cur.mod , vers , species , ndf){
+  
+  # cur.mod <- 1; vers <- 'pmetric'
+  # cur.mod <- 1 ; vers <- 'n.pmetric'
+  
+  
+  test.sp.lon <- function(){
+    
+    species <- species.sheep
+    ndf <- ndf.lev.lo
+    cur.mod <- 1; vers <- 'pmetric'
+    
+    gbm.cond <- gbm.cond.shp.lo.ndf
+    
+    species.ndf <- sheep.lo.ndf
+ }
+  # Params
+  
+  
+  if (species == species.sheep & ndf == ndf.lev.lo) { species.ndf <- sheep.lo.ndf }
+  if (species == species.sheep & ndf == ndf.lev.hi) { species.ndf <- sheep.hi.ndf }
+  if (species == species.goat & ndf == ndf.lev.lo) { species.ndf <- goat.lo.ndf }
+  if (species == species.goat & ndf == ndf.lev.hi) { species.ndf <- goat.hi.ndf }
+
+  
+  {
+    
+    gg.dat.nrow <- unique( d.gbr[   gbm.cond  & d.gbr$is.best.model & d.gbr$mod.form == cur.mod   ,  'total.sample.size' ])
+
+    
+    # Figure display items
+    gbm.cond.opt.mod <- (  gbm.cond & d.gbr$is.best.model & d.gbr$mod.form == cur.mod)
+
+    
+    mod.1.form <-  de.listify( d.gbr[   gbm.cond.opt.mod & d.gbr$mod.form == cur.mod ,  'gbr.form' ] )
+
+    
+    mod.1.form.label.w.eqn.s1 <- de.listify( gen.formula.label.1r(mod.1.form ) )[[1]][1]
+
+    mod.1.form.label.w.eqn.s2 <- de.listify( gen.formula.label.1r(mod.1.form ) )[[1]][2]
+
+    
+    # Treatment IDs
+    mod.1.u.tid <- de.listify( d.gbr[  gbm.cond.opt.mod  & d.gbr$mod.form == cur.mod  ,  'ws.ut.ids' ] )
+
+    mod.1.ccc <-  round( (  d.gbr[  gbm.cond.opt.mod  & d.gbr$mod.form == cur.mod,  "best.w.CCC"]  ) , rd.decs.R2)[1] 
+ 
+    mod.1.r2<-  round( (d.gbr[  gbm.cond.opt.mod  & !is.na(d.gbr$w.R2.mean) & d.gbr$mod.form == cur.mod,  "best.w.R2" ]) , rd.decs.R2)[1] 
+  
+    mod.1.nRMSE <-  round( (  d.gbr[  gbm.cond.opt.mod  & !is.na(d.gbr$w.nRMSE.mean) & d.gbr$mod.form == cur.mod,  "best.w.nRMSE"] ) , rd.decs.nRMSE )[1]
+
+    gg.dat.labl.ccc <- paste0("CCC = ",   mod.1.ccc )
+
+    gg.dat.labl.R2 <- paste0("R", supsc("2") , " = ", mod.1.r2 )
+
+    gg.dat.labl.nRMSE <- paste0("nRMSE(%) = ",  mod.1.nRMSE )
+    
+    mod.1.ss <- d.gbr[  gbm.cond.opt.mod &  d.gbr$mod.form == cur.mod,  'total.sample.size' ][1]
+ 
+    model.label <- str_c('Model ', cur.mod )
+    
+    gg.dat.fact.labl.r1.mod.ss <- str_c( model.label , ': n = ' ,  mod.1.ss)
+
+    gg.dat.fact.labl.r2.mod.ss <- str_c( mod.1.form.label.w.eqn.s1)
+
+
+  } # Plot data prep
+  
+  
+  {
+    
+    col.mod.form <- c(  
+      rep( cur.mod, times = (gg.dat.nrow ) )   
+    ) 
+    
+    col.mod.form.label.r1 <- c(  
+      rep(   gg.dat.fact.labl.r1.mod.ss , times = (gg.dat.nrow  ) ) 
+    )
+    
+    col.mod.form.label.r2 <- c(  
+      rep(   gg.dat.fact.labl.r2.mod.ss , times = (gg.dat.nrow   ) ) 
+    )
+    
+    col.species <- c(  
+      rep( species , times = (gg.dat.nrow ) )  
+    ) 
+    
+    col.ndf <- c(  
+      rep( ndf , times = (gg.dat.nrow  ) ) 
+    )
+    
+    col.species.ndf <- c(  
+      rep( species.ndf , times = (gg.dat.nrow   ) ) 
+    )
+    
+  
+    col.sample.size <- c(  
+      rep( species.ndf , times = (gg.dat.nrow  ) ) 
+    )
+    
+    
+    col.observed  <- c(
+      de.listify(d.gbr[gbm.cond.opt.mod  ,  'observed.Y' ][1][1] )  
+    )
+    
+    
+    col.formula  <- c(  
+      rep( cur.mod , times = (gg.dat.nrow ) )  
+    ) 
+    
+    
+    
+    col.residual  <- c(
+      de.listify(d.gbr[gbm.cond.opt.mod ,  'ws.residuals' ][1][1] )  
+    )
+    
+    col.modelled  <- c(  
+      
+      as.numeric(  de.listify(d.gbr[  gbm.cond.opt.mod,  'ws.predicted' ] )  )  
+      
+    )
+    
+    col.bw_kg <- c(
+      
+      as.numeric(  de.listify(   d.gbr[gbm.cond.opt.mod ,  'ws.bw_kg.measrs' ][1][1] ))  
+      
+    ) 
+    
+    col.label.ut.id <- c(
+      mod.1.u.tid
+    ) 
+  
+    col.label.ccc  <- c(
+      rep( gg.dat.labl.ccc , times = (gg.dat.nrow   ) ) 
+    )
+    
+    
+    col.label.r2  <- c(
+      rep( gg.dat.labl.R2 , times = (gg.dat.nrow   ) ) 
+    )
+    
+    col.label.nrmse  <- c(
+      rep( gg.dat.labl.nRMSE , times = (gg.dat.nrow   ) ) 
+    )
+    
+    
+    if (vers == 'pmetric'){
+      
+  
+      col.coef.bw_kg <- c( 
+        rep( d.gbr[gbm.cond,  'ws.coef.bw_kg' ][1] , times = gg.dat.nrow )  
+      )
+      
+      col.coef.intercept <- c( 
+        rep( d.gbr[   gbm.cond,  'ws.coef.intercept' ][1] , times = gg.dat.nrow)    
+        
+      )
+      
+    }
+    
+    
+    
+  } # Pre-define dataframe columns
+  
+  length(col.species)
+  
+  #length(col.bw_kg)
+  #length(col.coef.bw_kg)
+  # length(col.coef.intercept)
+  # length(col.label.form)
+  
+  length(col.label.nrmse)
+  length(col.label.r2)
+  length(col.label.ut.id)
+  length(col.ndf)
+  length(col.observed)
+  length(col.modelled)
+  length(col.residual)
+  
+  
+  
+  gg.dat <- data.frame(
+    
+    
+    col.mod.form =  col.mod.form
+    
+    ,  col.mod.form.label.r1 =  col.mod.form.label.r1
+    
+    ,  col.mod.form.label.r2 =  col.mod.form.label.r2
+    
+    , species   = col.species
+    
+    , ndf     = col.ndf
+    
+    , species.ndf = col.species.ndf 
+    
+    , observed =   col.observed
+    
+    , modelled =  col.modelled
+    
+    ,  residual =   col.residual
+    
+    # ,  rms.residual.1 =   col.rms.residual
+    
+    #, bw_kg = col.bw_kg
+    
+    
+    , label.ut.id = col.label.ut.id 
+    
+    , label.ccc = col.label.ccc
+    
+    , label.r2 = col.label.r2
+    
+    , label.nrmse = col.label.nrmse
+    
+  )
+  
+  if ( vers == "pmetric") { 
+    
+    gg.dat$coef.bw_kg <- col.coef.bw_kg ; 
+    gg.dat$coef.intercept <- col.coef.intercept
+    
+    #gg.dat$label.form.r1 <- col.label.r1.form
+    # gg.dat$label.form.r2 <- col.label.r2.form
+    # gg.dat$label.form.r3 <- col.label.r3.form
+    
+  }
+  
+  
+  return (gg.dat )
+  
 }
 
 

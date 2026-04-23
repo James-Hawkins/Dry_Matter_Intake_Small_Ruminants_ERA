@@ -13,7 +13,7 @@ source('functions.R') ; source('m.boost.params.R')
   
 
   
-source('m.boost.params.R')
+source('m.boost.params.R') ; source('functions.R') 
   
   s.rums.gbr <- s.rums[]   
   
@@ -573,11 +573,10 @@ names[which( var.imps == var.imps.ordered[8] ) ]
 }
   
 
-  
 mod.1.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg.e75 + adg_g_day + NDF_nutrition  )
-mod.2.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg.e75 + adg_g_day + CP_nutrition  )
-mod.3.sp.lo.ndf <- as.formula(  feed_intake_g_d  ~  bw_kg.e75 + adg_g_day +  NDF_nutrition + CP_nutrition  )
-mod.4.sp.lo.ndf <- as.formula(   feed_intake_g_d  ~ bw_kg.e75 + adg_g_day + NDF_nutrition + NDF_digest )
+mod.2.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg.e75  + bw_kg.sqd + adg_g_day + NDF_nutrition  )
+mod.3.sp.lo.ndf <- as.formula(  feed_intake_g_d  ~  bw_kg.e75 + adg_g_day +  NDF_nutrition + NDF_x_NDF_digest  )
+mod.4.sp.lo.ndf <- as.formula(   feed_intake_g_d  ~ bw_kg.e75 + bw_kg.sqd + adg_g_day + NDF_nutrition + NDF_digest )
 
 mod.1.sp.hi.ndf <- mod.1.sp.lo.ndf
 mod.2.sp.hi.ndf <- mod.2.sp.lo.ndf
@@ -629,7 +628,7 @@ d.gbr.null <- d.gbr
 
 } # Formula initialisations
 
-
+nrow(d.gbr)
 colnames(d.gbr)
 
 for ( r in 1 : (  nrow(d.gbr.null)  )  ){
@@ -650,7 +649,7 @@ species <-   d.gbr[r, 'species']
 ndf  <-   d.gbr[r, 'ndf'] 
 k <-  d.gbr[r,'k']
 mv <- d.gbr[ r, 'mod.vers']
-mf <-  d.gbr[ r, 'mod.form']  
+mf <-  d.gbr[r , 'mod.form']  
 
 r.cnd.species.ndf.mf <-  ( d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf )
 r.cnd.species.ndf.mf.mv <-  ( d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf & d.gbr$mod.vers == mv)
@@ -867,7 +866,6 @@ if ( !random.exp.int ){  ws.predicted <- predict(ws.model , data = all.data )   
 
 
 
-
 d.gbr[r, 'ws.predicted'] <- listify( ws.predicted )
 
 ws.residuals  <- ws.predicted - all.data[,'feed_intake_g_d']
@@ -1017,30 +1015,17 @@ gbr.out()
 View(d.gbr)
 
 # ---- PLOTS -------
-gg.dat.m1 <- gen.gg.df(1 , 'pmetric') 
-gg.dat.m2 <- gen.gg.df(2 , 'pmetric') 
-gg.dat.m3 <- gen.gg.df(3 , 'pmetric') 
-gg.dat.m4 <- gen.gg.df(4 , 'pmetric') 
+{
 
+gg.d.sp.lon.all <- gen.gg.df.sp.specific( 1 , 'pmetric' , species.sheep , ndf.lev.lo) 
 
-gg.dat.m1 <- gen.gg.df(1 , 'n.pmetric') 
-gg.dat.m2 <- gen.gg.df(2 , 'n.pmetric') 
-gg.dat.m3 <- gen.gg.df(3 , 'pmetric') 
-gg.dat.m4 <- gen.gg.df(4 , 'pmetric') 
+for (m in 2:n.mod.form ){ gg.d.sp.lon.all <- rbind(gg.d.sp.lon.all , gen.gg.df.sp.specific(m , 'pmetric' , species.sheep , ndf.lev.lo))  }
 
+gg.d.sp.hin.all <- gen.gg.df.sp.specific( 1 , 'pmetric' , species.sheep , ndf.lev.hi) 
 
+for (m in 2:n.mod.form ){ gg.d.sp.hin.all <- rbind( gg.d.sp.hin.all , gen.gg.df.sp.specific(m , 'pmetric' , species.sheep , ndf.lev.hi))  }
 
-gg.dat <- rbind(
-  gg.dat.m1
-  ,  gg.dat.m2 
- #, gg.dat.m3
-# , gg.dat.m4
-  )
-
-gg.d.sp.lon <- gg.dat[gg.dat$species.ndf   == sheep.lo.ndf   , ]
-gg.d.sp.hin <- gg.dat[gg.dat$species.ndf   == sheep.hi.ndf , ]
-gg.d.gt.lon <- gg.dat[gg.dat$species.ndf   == goat.lo.ndf , ]
-gg.d.gt.hin <- gg.dat[gg.dat$species.ndf   == goat.hi.ndf  , ]
+} # Data frame tabulation - parametric
 
 
 {
@@ -1199,9 +1184,9 @@ plot <- gg.y.valid.theme   %>% +
 return (   plot  ) 
 }
 
-gg.y.valid.sp.lon.0 <- gen.gg.valid(gg.d.sp.lon ,gg.valid.lab.x.crd.sp.lon  , gg.valid.lab.y.crd.lev.1 , gg.valid.lab.y.crd.lev.2  , gg.valid.lab.y.crd.lev.3  )
+gg.y.valid.sp.lon.0 <- gen.gg.valid(gg.d.sp.lon.all  ,gg.valid.lab.x.crd.sp.lon  , gg.valid.lab.y.crd.lev.1 , gg.valid.lab.y.crd.lev.2  , gg.valid.lab.y.crd.lev.3  )
   
-gg.y.valid.sp.hin.0 <- gen.gg.valid(gg.d.sp.hin ,gg.valid.lab.x.crd.sp.hin  , gg.valid.lab.y.crd.lev.1 , gg.valid.lab.y.crd.lev.2  , gg.valid.lab.y.crd.lev.3  )
+gg.y.valid.sp.hin.0 <- gen.gg.valid( gg.d.sp.hin.all ,gg.valid.lab.x.crd.sp.hin  , gg.valid.lab.y.crd.lev.1 , gg.valid.lab.y.crd.lev.2  , gg.valid.lab.y.crd.lev.3  )
 
 gg.y.valid.sp.lon.0 
 

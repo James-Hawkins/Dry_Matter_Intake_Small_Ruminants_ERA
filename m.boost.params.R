@@ -35,15 +35,15 @@ max.m.stops <<- c( 1500 , 1500 , 1500 , 1500)
 
 # Parameters for model generation
 
-n.species <<- 2
+n.species <<- 1
 n.ndf <<- 2
 
 # Hyper-parameters
 p.k <- 5
-n.mod.form <<- 2
+n.mod.form <<- 4
 n.mod.v.family <<- 1
-n.mod.v.boost.control.mstop <<- 2
-n.mod.v.boost.control.nu <<- 2
+n.mod.v.boost.control.mstop <<- 1
+n.mod.v.boost.control.nu <<- 9
 
 
 optimization.metric.var.name.1 <<- vn.w.R2.mean
