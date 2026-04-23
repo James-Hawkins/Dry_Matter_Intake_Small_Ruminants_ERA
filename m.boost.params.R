@@ -4,6 +4,9 @@
 
 random.exp.int <<- FALSE
 
+# age.status <<- 'growing'
+# age.status <<- NA
+
 
 y.var <<- 'feed_intake_g_d'
 #y.var <<- 'drym_intake_g_d'
@@ -37,7 +40,7 @@ n.ndf <<- 2
 
 # Hyper-parameters
 p.k <- 5
-n.mod.form <<- 4
+n.mod.form <<- 2
 n.mod.v.family <<- 1
 n.mod.v.boost.control.mstop <<- 2
 n.mod.v.boost.control.nu <<- 2

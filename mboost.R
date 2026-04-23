@@ -58,7 +58,12 @@ ids.omit <- ids.rep.fem
 ids.omit <- c(ids.omit , ids.omit.ind , ids.rep.fem , ids.omit.var.ol)
 
 s.rums.min.vars <-  ( !is.na(s.rums$feed_intake_g_d) & !is.na(s.rums$bw_kg) &  !is.na(s.rums$adg_g_day)  )
-s.rums.dont.exclude <- !(s.rums$ut.id %in% ids.omit)
+
+if ( is.na(age.status) ) { s.rums.age.subset <- TRUE } else if (age.status == 'growing') { 
+  s.rums.age.subset <- ( s.rums$bw_kg < 20 & !is.na(s.rums$bw_kg )) }
+
+
+s.rums.dont.exclude <- (!(s.rums$ut.id %in% ids.omit) & s.rums.age.subset  )
 
 # handle outliers
 cnd.sp.lo.ndf.pre.ol <- (s.rums.min.vars & s.rums$Species == species.sheep  & s.rums$ndf.level == ndf.lev.lo & s.rums.dont.exclude)
@@ -192,6 +197,12 @@ vn.best.w.R2 <<- 'best.w.R2'
 vn.best.w.nRMSE <<- 'best.w.nRMSE'
 vn.best.w.CCC <<- 'best.w.CCC'
 
+
+vn.best.global.w.R2 <<- 'best.global.w.R2'
+vn.best.global.w.nRMSE <<- 'best.global.w.nRMSE'
+vn.best.global.w.CCC <<- 'best.global.w.CCC'
+
+
 vn.w.R2.mean <<- 'w.R2.mean'
 vn.w.nRMSE.mean <<- 'w.nRMSE.mean'
 vn.w.CCC.mean <<- 'w.CCC.mean'
@@ -221,7 +232,16 @@ d.gbr[ , vn.best.w.R2 ] <- NA
 d.gbr[ , vn.best.w.nRMSE ] <- NA
 d.gbr[ , vn.best.w.CCC ] <- NA
 
+
 d.gbr[ ,  'is.best.model'] <- FALSE
+
+# Global metrics = all formulae - optimal model
+d.gbr[ , vn.best.global.w.R2 ] <- NA
+d.gbr[ , vn.best.global.w.nRMSE ] <- NA
+d.gbr[ , vn.best.global.w.CCC ] <- NA
+
+d.gbr[ ,  'is.best.global.model'] <- FALSE
+
 
 # Current iteration
 d.gbr[ , vn.w.R2.mean ] <- NA
@@ -610,7 +630,6 @@ d.gbr.null <- d.gbr
 } # Formula initialisations
 
 
-
 colnames(d.gbr)
 
 for ( r in 1 : (  nrow(d.gbr.null)  )  ){
@@ -829,7 +848,7 @@ ws.NDF_digest.coef <- as.numeric(coef(ws.model )[ ordered.var.names[6]  ] )
 
 ws.offset.coef <- as.numeric(model$offset)
 
-intercept.scaled <-  ws.intercept.coef + mean.bw *  ws.bw_kg.coef  + mean.adg *  ws.adg_g_day.coef + mean.ndf *  ws.NDF_nutrition.coef
+#intercept.scaled <-  ws.intercept.coef + mean.bw *  ws.bw_kg.coef  + mean.adg *  ws.adg_g_day.coef + mean.ndf *  ws.NDF_nutrition.coef
 
 
 d.gbr[r, 'ws.coef.intercept'] <-  ws.intercept.coef 
@@ -854,7 +873,7 @@ d.gbr[r, 'ws.predicted'] <- listify( ws.predicted )
 ws.residuals  <- ws.predicted - all.data[,'feed_intake_g_d']
 d.gbr[r, 'ws.residuals'] <- listify(ws.residuals )
 d.gbr[r, 'ws.rms.residuals'] <- listify( sqrt(ws.residuals^2) )
-d.gbr[r, 'ws.bw_kg.measrs'] <- listify( ws.bw_kg )
+#d.gbr[r, 'ws.bw_kg.measrs'] <- listify( ws.bw_kg )
 
 
 }
@@ -864,10 +883,7 @@ d.gbr[r, 'ws.bw_kg.measrs'] <- listify( ws.bw_kg )
 
 {
 
-if ( !random.exp.int ){   test.predicted <- predict( model , newdata = test.data)  }
-if ( random.exp.int ){   test.predicted <- predict.manual(  formula  , test.data , model.offset , 'test' , r )  }
 
- 
 
 #d.gbr[r, 'predicted.mod'] <-   listify( as.numeric(test.predicted) )
 
@@ -881,6 +897,10 @@ d.gbr[r, 'coef.NDF_Digest']  <- as.numeric(coef(model  )[ ordered.var.names[6]])
 
 d.gbr[r, 'coef.offset.plus.intercept']  <- as.numeric(coef(model  )[ordered.var.names[1]] ) + model.offset 
 if ( is.na( as.numeric(coef(model  )['(Intercept)'] ))){ d.gbr[r, 'coef.offset.plus.intercept']  <- model.offset  }
+
+
+if ( !random.exp.int ){   test.predicted <- predict( model , newdata = test.data)  }
+if ( random.exp.int ){   test.predicted <- predict.manual(  formula  , test.data , model.offset , 'test' , r )  }
 
 
 
@@ -937,7 +957,7 @@ if ( k == p.k) {
   
 } # MODEL METRICS ACROSS FOLDS
   
-# Model identification -- best performing
+# Model identification 1 -- best performing among given formula (i.e. across hyperparameters)
 if ( k == p.k &  mv == col.mod.vers[  length(col.mod.vers )  ]   ) {
   
   species.ndf.form.cond <- (d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf  )
@@ -955,6 +975,23 @@ if ( k == p.k &  mv == col.mod.vers[  length(col.mod.vers )  ]   ) {
 
 }
   
+# Model identification 2 -- best performing among all formula (i.e. across hyperparameters)
+if ( k == p.k & mv == col.mod.vers[  length(col.mod.vers )  ] & mf == n.mod.form  ) {
+  
+  species.ndf.best.mod.cond <- (d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$is.best.model  )
+  
+  cond.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 1)
+  cond.n.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 2)
+  
+  species.ndf.form.cond.pmetric <- species.ndf.best.mod.cond  & cond.pmetric
+  species.ndf.form.cond.n.pmetric <- species.ndf.best.mod.cond  & cond.n.pmetric
+  
+  
+  d.gbr <- assign.best.model.all.forms(species.ndf.form.cond.pmetric , d.gbr )
+  d.gbr <- assign.best.model.all.forms(species.ndf.form.cond.n.pmetric , d.gbr)
+  
+}
+
 
 if ( r == nrow(d.gbr)){
   
@@ -974,47 +1011,6 @@ gbr.out()
 View(d.gbr)
 
 gbr.out()
-
-
-d.gbr[  d.gbr$species.ndf == sheep.lo.ndf & d.gbr$mod.form == 1  , 'gbr.form' ]
-
-d.gbr$total.sample.size
-
-
-# View(d.gbr)
-
-d.gbr$gbr.form.2
-
-
-d.gbr[gbm.cond.shp.lo.ndf ,'gbr.model.1.nu']
-d.gbr[gbm.cond.shp.lo.ndf ,'gbr.model.1.m.stop']
-
-d.gbr$gbr.model.1.nu
-
-View(d.gbr)
-
-
-d.gbr[gbm.cond.shp.lo.ndf, ]
-
-d.gbr[gbm.cond.shp.lo.ndf, 'test.w.r2.mean.mod.1']
-d.gbr[gbm.cond.shp.hi.ndf, 'test.w.r2.mean.mod.1']
-d.gbr[gbm.cond.gt.lo.ndf, 'test.w.r2.mean.mod.1']
-d.gbr[gbm.cond.gt.hi.ndf, 'test.w.r2.mean.mod.1']
-
-d.gbr[gbm.cond.shp.lo.ndf, 'mod.1.best.w.r2']
-d.gbr[gbm.cond.shp.hi.ndf, 'mod.1.best.w.r2']
-d.gbr[gbm.cond.gt.lo.ndf, 'mod.1.best.w.r2']
-d.gbr[gbm.cond.gt.hi.ndf, 'mod.1.best.w.r2']
-
-d.gbr[gbm.cond.shp.lo.ndf, 'mod.1.best.w.nrmse']
-d.gbr[gbm.cond.shp.hi.ndf, 'mod.1.best.w.nrmse']
-d.gbr[gbm.cond.gt.lo.ndf, 'mod.1.best.w.nrmse']
-d.gbr[gbm.cond.gt.hi.ndf, 'mod.1.best.w.nrmse']
-
-
-
-
-d.gbr[d.gbr$k == 5 & d.gbr$species == species.sheep & d.gbr$ndf == ndf.lev.lo ,  'k.IDs']
 
 
 
@@ -1037,7 +1033,7 @@ gg.dat.m4 <- gen.gg.df(4 , 'pmetric')
 gg.dat <- rbind(
   gg.dat.m1
   ,  gg.dat.m2 
-  , gg.dat.m3
+ #, gg.dat.m3
 # , gg.dat.m4
   )
 
@@ -1112,10 +1108,7 @@ gg.d.gt.hin <- gg.dat[gg.dat$species.ndf   == goat.hi.ndf  , ]
       
       , axis.text.x = element_text( angle = 90 , hjust = 1 , vjust = 0.5 , size = 10.5)
       , axis.text.y = element_text( hjust = 1 , vjust = 0.5 , size = 10.5)
-    ) +
-    geom_abline(intercept = 0, slope = 1, color = "black", linetype = "solid") 
-  
-  
+    ) 
   
   gg.valid.pnt.size <<- 1
   gg.valid.pnt.colr <<- 'black'
@@ -1128,7 +1121,15 @@ gg.d.gt.hin <- gg.dat[gg.dat$species.ndf   == goat.hi.ndf  , ]
 
 gen.gg.valid <- function(  dat , xc ,  yr.1 , yr.2 , yr.3 ){
   
-  # test: dat <- gg.d.sp.lon ; xc <- gg.valid.lab.x.crd.sp.lon
+  # test:
+  test <- function(){
+    dat <- gg.d.sp.lon 
+    xc <- gg.valid.lab.x.crd.sp.lon
+    yr.1 <- gg.valid.lab.y.crd.lev.1
+    yr.2 <- gg.valid.lab.y.crd.lev.2
+    yr.3 <- gg.valid.lab.y.crd.lev.3
+  }
+  
   
 plot <- gg.y.valid.theme   %>% +
   #  ggplot() + 
@@ -1140,7 +1141,10 @@ plot <- gg.y.valid.theme   %>% +
       , strip = strip_nested(size = "variable")
       
     ) +
-  geom_smooth(data = dat  ,  aes(x = observed , y = modelled), method="lm", se=FALSE, color="#8EC5FF" , size = .6 , linetype = 'solid') +
+  geom_line(data = data.frame(x = c(-Inf, Inf), y = c(-Inf, Inf)), 
+            aes(x = x, y = y   , color = "y = x")) + 
+ # geom_abline( aes(  x = y , y = x ,  color = 'Predicted = Observed') , linetype = "solid") +
+  geom_smooth(data = dat  ,  aes(x = observed , y = modelled , color = 'Best fit' ), method="lm", se=FALSE , size = .6 , linetype = 'solid') +
     # LABELS
     geom_label( 
       data = dat ,
@@ -1174,10 +1178,25 @@ plot <- gg.y.valid.theme   %>% +
       # Render HTML in the strips
       #  strip.text = element_markdown(hjust = 0.5)
       # strip.x ==  strip_nested(size = "variable")
-    )
- 
+      legend.position = 'inside'
+      , legend.position.inside = c(0.15, 0.875)
+      , legend.title = element_blank()
+    ) + # + scale_color_manual(values = c( "LOBF" = "red")) +
+  scale_color_manual(
+    name = ''
+    , values =   c( 
+      "Best fit" = "#8EC5FF"
+      , "y = x"  = 'black'
+    ) 
+    , breaks = c(
+      "Best fit"
+     ,  'y = x'
+    )) +
+  guides(color = guide_legend(override.aes = list( ncol = 2 , linetype = c(1, 1))))+
+  guides(color = guide_legend(ncol = 2))
 
-return (plot) 
+
+return (   plot  ) 
 }
 
 gg.y.valid.sp.lon.0 <- gen.gg.valid(gg.d.sp.lon ,gg.valid.lab.x.crd.sp.lon  , gg.valid.lab.y.crd.lev.1 , gg.valid.lab.y.crd.lev.2  , gg.valid.lab.y.crd.lev.3  )

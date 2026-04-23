@@ -61,7 +61,7 @@ d <- as.data.frame(d.raw)
   species.goat <- c(unq.spcs[2]  )
   species.sheep <- c(unq.spcs[1]  )
   species.srs <<- c( species.sheep ,   species.goat )
-  
+
   stage.growing.male <- "growing.male"
   stage.growing.female <- "growing.female"
   stage.growing.all <-  "growing.all" 

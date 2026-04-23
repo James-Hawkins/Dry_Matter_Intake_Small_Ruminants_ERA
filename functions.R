@@ -1,4 +1,8 @@
 
+
+# source('functions.R')
+
+
 threepoint <<- function(x, y, ladder=c(1, 1/2, 1/3, 0, -1/2, -1)) {
   # x and y are length-three samples from a dataset.
   dx <- diff(x)
@@ -296,10 +300,21 @@ listify.coef.names <<- function(model){
 predict.manual <<- function(form , dat , offset , data.set.type , row ){
   
   # test: form <- formula ; offset <-  ws.offset.coef ; dat <- d ; data.set.type <- 'test' ; row <- 1
-  # test: form <- formula ; offset <-  model.offset ; dat <- d ; data.set.type <- 'test' ; row <- 1
-  
+
   # From whole sample ; form <- formula ; dat <- all.data ; offset <- ws.offset.coef ; data.set.type <- 'whole' ; row <- 1 
   
+  
+  test.test <- function(){
+    
+    form <- formula 
+    offset <-  model.offset 
+    dat <- test.data 
+    data.set.type <- 'test' 
+    row <- 1
+    
+    
+    
+  }
  
   x.vars <- de.listify(return.x.vars(form , data.set.type , row )[1])[[1]]
   x.coefs <- de.listify(return.x.vars(form , data.set.type  , row)[2])[[1]]
@@ -434,13 +449,11 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
   }
   
 
-  
   cur.family.index <- as.numeric(substr(mod.v , 1 , 1))
   cur.mstop.index <-  as.numeric( substr(mod.v , 3 , 3) )
   cur.nu.index <- as.numeric(  substr(mod.v , 5 , 5))
   
   family.list <- c(   1  ,  2  ) ;   mod.fam.gaussian <- 1 ; mod.fam.gbm <- 2
-  
   
   mstop.max <- 540 ; mstop.min <- 150 ; m.stop.range <- (mstop.max - mstop.min)
   nu.max <- 0.05 ; nu.min <-.14 ; nu.range <- (nu.max - nu.min)
@@ -452,10 +465,21 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
   mstop <-  mstop.list[cur.mstop.index]
   nu <- nu.list[cur.nu.index]
   
+  
+  mod.0 <- glmboost( 
+    
+    form  
+    
+    , data =  data
+    
+    , family = Gaussian()
+    ,  control = boost_control(mstop =   mstop , nu = nu)
+    , center = FALSE
+    
+  )
 
   # cvm <- cvrisk(mod.b)
  # mstop <- mstop(cvm)
-  
   
   x.vars <- xtract.x.vars(  form )
   cols.2.include <- c( x.vars )
@@ -639,6 +663,7 @@ return.x.vars <- function(  form.obj , data.set.type ,r ){
     
   } else if (data.set.type == 'test' ){
   
+  intercept.plus.offset <- d.gbr[r, 'coef.offset.plus.intercept'] 
   intercept <-  d.gbr[r, 'coef.int']  
   coef.bw <-  d.gbr[r, 'coef.BW']  
   coef.adg <-  d.gbr[r, 'coef.ADG'] 
@@ -719,8 +744,6 @@ gbr.out <<- function(){
   )
   
   
-  cols.n
-  
   cols.2.export <- colnames(d.gbr)[ which( colnames(d.gbr) != cols.not.2.export )  ]
   
   d.export<- d.gbr[  , cols.2.export ]
@@ -750,7 +773,7 @@ gbr.out <<- function(){
   
   
   write.xlsx(  d.export.sheep.lon , "Figures.out/gbr_out_sheep_lon.xlsx")
-  write.xlsx( d.export.sheep.hin , "Figures.out/gbr_out_sheep_hin.xlsx")
+#  write.xlsx( d.export.sheep.hin , "Figures.out/gbr_out_sheep_hin.xlsx")
   #write.xlsx( d.export.goat.lon, "Figures.out/gbr_out_goat_lon.xlsx")
  # write.xlsx(d.export.goat.hin, "Figures.out/gbr_out_goat_hin.xlsx")
   
@@ -801,28 +824,28 @@ gen.gg.df <<- function(  cur.mod , vers){
   
   
   
-  mod.1.form.label.r1.sp.lo.ndf <- de.listify( gen.formula.label(mod.1.form.sp.lo.ndf ) )[[1]][1]
-  mod.1.form.label.r1.sp.hi.ndf <- de.listify( gen.formula.label(mod.1.form.sp.hi.ndf) )[[1]][1]
-  mod.1.form.label.r1.gt.lo.ndf <-  de.listify( gen.formula.label(mod.1.form.gt.lo.ndf ) )[[1]][1]
-  mod.1.form.label.r1.gt.hi.ndf <- de.listify( gen.formula.label(mod.1.form.gt.hi.ndf ) )[[1]][1]
+ # mod.1.form.label.r1.sp.lo.ndf <- de.listify( gen.formula.label(mod.1.form.sp.lo.ndf ) )[[1]][1]
+ # mod.1.form.label.r1.sp.hi.ndf <- de.listify( gen.formula.label(mod.1.form.sp.hi.ndf) )[[1]][1]
+ # mod.1.form.label.r1.gt.lo.ndf <-  de.listify( gen.formula.label(mod.1.form.gt.lo.ndf ) )[[1]][1]
+ # mod.1.form.label.r1.gt.hi.ndf <- de.listify( gen.formula.label(mod.1.form.gt.hi.ndf ) )[[1]][1]
   
-  mod.1.form.label.r2.sp.lo.ndf <- de.listify( gen.formula.label(mod.1.form.sp.lo.ndf ) )[[1]][2]
-  mod.1.form.label.r2.sp.hi.ndf <- de.listify( gen.formula.label(mod.1.form.sp.hi.ndf) )[[1]][2]
-  mod.1.form.label.r2.gt.lo.ndf <-  de.listify( gen.formula.label(mod.1.form.gt.lo.ndf ) )[[1]][2]
-  mod.1.form.label.r2.gt.hi.ndf <- de.listify( gen.formula.label(mod.1.form.gt.hi.ndf ) )[[1]][2]
+  #mod.1.form.label.r2.sp.lo.ndf <- de.listify( gen.formula.label(mod.1.form.sp.lo.ndf ) )[[1]][2]
+ # mod.1.form.label.r2.sp.hi.ndf <- de.listify( gen.formula.label(mod.1.form.sp.hi.ndf) )[[1]][2]
+ # mod.1.form.label.r2.gt.lo.ndf <-  de.listify( gen.formula.label(mod.1.form.gt.lo.ndf ) )[[1]][2]
+ # mod.1.form.label.r2.gt.hi.ndf <- de.listify( gen.formula.label(mod.1.form.gt.hi.ndf ) )[[1]][2]
   
   
-  mod.1.form.label.r3.sp.lo.ndf <- de.listify( gen.formula.label(mod.1.form.sp.lo.ndf ) )[[1]][3]
-  mod.1.form.label.r3.sp.hi.ndf <- de.listify( gen.formula.label(mod.1.form.sp.hi.ndf) )[[1]][3]
-  mod.1.form.label.r3.gt.lo.ndf <-  de.listify( gen.formula.label(mod.1.form.gt.lo.ndf ) )[[1]][3]
-  mod.1.form.label.r3.gt.hi.ndf <- de.listify( gen.formula.label(mod.1.form.gt.hi.ndf ) )[[1]][3]
+  #  mod.1.form.label.r3.sp.lo.ndf <- de.listify( gen.formula.label(mod.1.form.sp.lo.ndf ) )[[1]][3]
+  # mod.1.form.label.r3.sp.hi.ndf <- de.listify( gen.formula.label(mod.1.form.sp.hi.ndf) )[[1]][3]
+  # mod.1.form.label.r3.gt.lo.ndf <-  de.listify( gen.formula.label(mod.1.form.gt.lo.ndf ) )[[1]][3]
+  # mod.1.form.label.r3.gt.hi.ndf <- de.listify( gen.formula.label(mod.1.form.gt.hi.ndf ) )[[1]][3]
   
   
 
   # Treatment IDs
   mod.1.u.tid.sp.lo.ndf <- de.listify( d.gbr[  gbm.cond.shp.lo.ndf.opt.mod  & d.gbr$mod.form == cur.mod  ,  'ws.ut.ids' ] )
   mod.1.u.tid.sp.hi.ndf <- de.listify( d.gbr[  gbm.cond.shp.hi.ndf.opt.mod  & d.gbr$mod.form == cur.mod  ,  'ws.ut.ids' ] )
-  mod.1.u.tid.gt.lo.ndf <- de.listify( d.gbr[  gbm.cond.gt.lo.ndf.opt.mod  & d.gbr$mod.form == cur.mod,  'ws.ut.ids' ] )
+  mod.1.u.tid.gt.lo.ndf <- de.listify( d.gbr[   d.gbr$mod.form == cur.mod,  'ws.ut.ids' ] )
   mod.1.u.tid.gt.hi.ndf <- de.listify( d.gbr[  gbm.cond.gt.hi.ndf.opt.mod & d.gbr$mod.form == cur.mod ,  'ws.ut.ids' ] )
   
   mod.1.ccc.sp.lo.ndf <-  round( (  d.gbr[  gbm.cond.shp.lo.ndf.opt.mod  & d.gbr$mod.form == cur.mod,  "best.w.CCC"]  ) , rd.decs.R2)[1] 
@@ -888,40 +911,40 @@ gen.gg.df <<- function(  cur.mod , vers){
   
   col.mod.form <- c(  
     rep( cur.mod, times = (gg.dat.nrow.sheep.lo.ndf + gg.dat.nrow.sheep.hi.ndf) )  
-    , rep( cur.mod, times = (gg.dat.nrow.goat.lo.ndf + gg.dat.nrow.goat.hi.ndf) )  
+   # , rep( cur.mod, times = (gg.dat.nrow.goat.lo.ndf + gg.dat.nrow.goat.hi.ndf) )  
   ) 
   
   col.mod.form.label.r1 <- c(  
     rep(   gg.dat.fact.labl.r1.sp.lo.ndf.mod.ss , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
     , rep(   gg.dat.fact.labl.r1.sp.hi.ndf.mod.ss , times = (gg.dat.nrow.sheep.hi.ndf   ) )
-    , rep(   gg.dat.fact.labl.r1.gt.lo.ndf.mod.ss, times = (gg.dat.nrow.goat.lo.ndf  ) ) 
-   , rep(   gg.dat.fact.labl.r1.gt.hi.ndf.mod.ss , times = (gg.dat.nrow.goat.hi.ndf   ) )
+   # , rep(   gg.dat.fact.labl.r1.gt.lo.ndf.mod.ss, times = (gg.dat.nrow.goat.lo.ndf  ) ) 
+  # , rep(   gg.dat.fact.labl.r1.gt.hi.ndf.mod.ss , times = (gg.dat.nrow.goat.hi.ndf   ) )
   )
   
   col.mod.form.label.r2 <- c(  
     rep(   gg.dat.fact.labl.r2.sp.lo.ndf.mod.ss , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
     , rep(   gg.dat.fact.labl.r2.sp.hi.ndf.mod.ss , times = (gg.dat.nrow.sheep.hi.ndf   ) )
-      , rep(   gg.dat.fact.labl.r2.gt.lo.ndf.mod.ss, times = (gg.dat.nrow.goat.lo.ndf  ) ) 
-    , rep(   gg.dat.fact.labl.r2.gt.hi.ndf.mod.ss , times = (gg.dat.nrow.goat.hi.ndf   ) )
+   #   , rep(   gg.dat.fact.labl.r2.gt.lo.ndf.mod.ss, times = (gg.dat.nrow.goat.lo.ndf  ) ) 
+   # , rep(   gg.dat.fact.labl.r2.gt.hi.ndf.mod.ss , times = (gg.dat.nrow.goat.hi.ndf   ) )
   )
   
     col.species <- c(  
       rep( species.sheep , times = (gg.dat.nrow.sheep.lo.ndf + gg.dat.nrow.sheep.hi.ndf) )  
-     , rep( species.goat , times = (gg.dat.nrow.goat.lo.ndf + gg.dat.nrow.goat.hi.ndf) )  
+  #   , rep( species.goat , times = (gg.dat.nrow.goat.lo.ndf + gg.dat.nrow.goat.hi.ndf) )  
     ) 
     
     col.ndf <- c(  
       rep( ndf.lev.lo , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
       , rep( ndf.lev.hi , times = (gg.dat.nrow.sheep.hi.ndf   ) )
-      , rep( ndf.lev.lo , times = (gg.dat.nrow.goat.lo.ndf  ) ) 
-      , rep( ndf.lev.hi , times = (gg.dat.nrow.goat.hi.ndf   ) )
+     # , rep( ndf.lev.lo , times = (gg.dat.nrow.goat.lo.ndf  ) ) 
+    #  , rep( ndf.lev.hi , times = (gg.dat.nrow.goat.hi.ndf   ) )
     )
     
     col.species.ndf <- c(  
       rep( sheep.lo.ndf , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
       , rep( sheep.hi.ndf , times = (gg.dat.nrow.sheep.hi.ndf   ) )
-      , rep( goat.lo.ndf, times = (gg.dat.nrow.goat.lo.ndf  ) ) 
-     , rep( goat.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) )
+    #  , rep( goat.lo.ndf, times = (gg.dat.nrow.goat.lo.ndf  ) ) 
+    # , rep( goat.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) )
     )
     
 
@@ -929,22 +952,22 @@ gen.gg.df <<- function(  cur.mod , vers){
     col.sample.size <- c(  
       rep( sheep.lo.ndf , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
       , rep( sheep.hi.ndf , times = (gg.dat.nrow.sheep.hi.ndf   ) )
-      , rep( goat.lo.ndf, times = (gg.dat.nrow.goat.lo.ndf  ) ) 
-      , rep( goat.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) )
+   #   , rep( goat.lo.ndf, times = (gg.dat.nrow.goat.lo.ndf  ) ) 
+    #  , rep( goat.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) )
     )
     
     
     col.observed  <- c(
       de.listify(d.gbr[gbm.cond.shp.lo.ndf.opt.mod  ,  'observed.Y' ][1][1] )  
       , de.listify(d.gbr[gbm.cond.shp.hi.ndf.opt.mod ,  'observed.Y' ][1][1] )
-      , de.listify(d.gbr[gbm.cond.gt.lo.ndf.opt.mod ,  'observed.Y' ][1][1] )
-     , de.listify(d.gbr[gbm.cond.gt.hi.ndf.opt.mod ,  'observed.Y' ][1][1] )
+    #  , de.listify(d.gbr[gbm.cond.gt.lo.ndf.opt.mod ,  'observed.Y' ][1][1] )
+    # , de.listify(d.gbr[gbm.cond.gt.hi.ndf.opt.mod ,  'observed.Y' ][1][1] )
     )
     
     
     col.formula  <- c(  
       rep( cur.mod , times = (gg.dat.nrow.sheep.lo.ndf + gg.dat.nrow.sheep.hi.ndf) )  
-      , rep( 1 , times = (gg.dat.nrow.goat.lo.ndf + gg.dat.nrow.goat.hi.ndf) )  
+    #  , rep( 1 , times = (gg.dat.nrow.goat.lo.ndf + gg.dat.nrow.goat.hi.ndf) )  
     ) 
     
     
@@ -952,16 +975,16 @@ gen.gg.df <<- function(  cur.mod , vers){
     col.residual  <- c(
       de.listify(d.gbr[gbm.cond.shp.lo.ndf.opt.mod ,  'ws.residuals' ][1][1] )  
       , de.listify(d.gbr[gbm.cond.shp.hi.ndf.opt.mod  ,  'ws.residuals' ][1][1] )
-      , de.listify(d.gbr[gbm.cond.gt.lo.ndf.opt.mod ,  'ws.residuals' ][1][1] )
-      , de.listify(d.gbr[gbm.cond.gt.hi.ndf.opt.mod ,  'ws.residuals' ][1][1] )
+    #  , de.listify(d.gbr[gbm.cond.gt.lo.ndf.opt.mod ,  'ws.residuals' ][1][1] )
+    #  , de.listify(d.gbr[gbm.cond.gt.hi.ndf.opt.mod ,  'ws.residuals' ][1][1] )
     )
   
     col.modelled  <- c(  
       
       as.numeric(  de.listify(d.gbr[  gbm.cond.shp.lo.ndf.opt.mod,  'ws.predicted' ] )  )  
       , as.numeric(  de.listify(d.gbr[ gbm.cond.shp.hi.ndf.opt.mod ,  'ws.predicted' ]))  
-      , as.numeric(  de.listify(d.gbr[gbm.cond.gt.lo.ndf.opt.mod ,  'ws.predicted' ] ))  
-      , as.numeric(  de.listify(d.gbr[gbm.cond.gt.hi.ndf.opt.mod ,  'ws.predicted' ]))  
+    #  , as.numeric(  de.listify(d.gbr[gbm.cond.gt.lo.ndf.opt.mod ,  'ws.predicted' ] ))  
+   #   , as.numeric(  de.listify(d.gbr[gbm.cond.gt.hi.ndf.opt.mod ,  'ws.predicted' ]))  
       
     )
     
@@ -969,8 +992,8 @@ gen.gg.df <<- function(  cur.mod , vers){
       
               as.numeric(  de.listify(   d.gbr[gbm.cond.shp.lo.ndf.opt.mod ,  'ws.bw_kg.measrs' ][1][1] ))  
       ,       as.numeric(  de.listify(   d.gbr[gbm.cond.shp.hi.ndf.opt.mod ,  'ws.bw_kg.measrs' ][1][1] )) 
-      ,       as.numeric(  de.listify(   d.gbr[gbm.cond.gt.lo.ndf.opt.mod ,  'ws.bw_kg.measrs' ][1][1] )) 
-      ,       as.numeric(  de.listify(   d.gbr[gbm.cond.gt.hi.ndf.opt.mod ,  'ws.bw_kg.measrs' ][1][1] )) 
+    #  ,       as.numeric(  de.listify(   d.gbr[gbm.cond.gt.lo.ndf.opt.mod ,  'ws.bw_kg.measrs' ][1][1] )) 
+     # ,       as.numeric(  de.listify(   d.gbr[gbm.cond.gt.hi.ndf.opt.mod ,  'ws.bw_kg.measrs' ][1][1] )) 
       
     ) 
     
@@ -979,8 +1002,8 @@ gen.gg.df <<- function(  cur.mod , vers){
     col.label.ut.id <- c(
       mod.1.u.tid.sp.lo.ndf  
       , mod.1.u.tid.sp.hi.ndf 
-      ,  mod.1.u.tid.gt.lo.ndf  
-      ,  mod.1.u.tid.gt.hi.ndf  
+   #  ,  mod.1.u.tid.gt.lo.ndf  
+    #  ,  mod.1.u.tid.gt.hi.ndf  
     ) 
     
     
@@ -988,61 +1011,61 @@ gen.gg.df <<- function(  cur.mod , vers){
     col.label.ccc  <- c(
       rep( gg.dat.labl.sp.lo.ndf.ccc , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
       , rep( gg.dat.labl.sp.hi.ndf.ccc , times = (gg.dat.nrow.sheep.hi.ndf   ) ) 
-      , rep( gg.dat.labl.gt.lo.ndf.ccc , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
-      , rep( gg.dat.labl.gt.hi.ndf.ccc, times = (gg.dat.nrow.goat.hi.ndf   ) ) 
+   #   , rep( gg.dat.labl.gt.lo.ndf.ccc , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
+   #   , rep( gg.dat.labl.gt.hi.ndf.ccc, times = (gg.dat.nrow.goat.hi.ndf   ) ) 
     )
     
 
     col.label.r2  <- c(
       rep( gg.dat.labl.sp.lo.ndf.R2 , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
       , rep( gg.dat.labl.sp.hi.ndf.R2 , times = (gg.dat.nrow.sheep.hi.ndf   ) ) 
-     , rep( gg.dat.labl.gt.lo.ndf.R2 , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
-      , rep( gg.dat.labl.gt.hi.ndf.R2 , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
+   #  , rep( gg.dat.labl.gt.lo.ndf.R2 , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
+    #  , rep( gg.dat.labl.gt.hi.ndf.R2 , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
     )
     
     col.label.nrmse  <- c(
       rep( gg.dat.labl.sp.lo.ndf.nRMSE , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
       , rep( gg.dat.labl.sp.hi.ndf.nRMSE  , times = (gg.dat.nrow.sheep.hi.ndf   ) ) 
-      , rep( gg.dat.labl.gt.lo.ndf.nRMSE  , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
-      , rep( gg.dat.labl.gt.hi.ndf.nRMSE  , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
+    #  , rep( gg.dat.labl.gt.lo.ndf.nRMSE  , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
+    #  , rep( gg.dat.labl.gt.hi.ndf.nRMSE  , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
     )
     
     
     if (vers == 'pmetric'){
       
-      col.label.r1.form  <- c(
-        rep( mod.1.form.label.r1.sp.lo.ndf , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
-        , rep( mod.1.form.label.r1.sp.hi.ndf , times = (gg.dat.nrow.sheep.hi.ndf   ) ) 
-          , rep( mod.1.form.label.r1.gt.lo.ndf , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
-          , rep( mod.1.form.label.r1.gt.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
-      )
+    #  col.label.r1.form  <- c(
+   #     rep( mod.1.form.label.r1.sp.lo.ndf , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
+        #, rep( mod.1.form.label.r1.sp.hi.ndf , times = (gg.dat.nrow.sheep.hi.ndf   ) ) 
+          #, rep( mod.1.form.label.r1.gt.lo.ndf , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
+         # , rep( mod.1.form.label.r1.gt.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
+     # )
       
-      col.label.r2.form  <- c(
-        rep( mod.1.form.label.r2.sp.lo.ndf , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
-        , rep( mod.1.form.label.r2.sp.hi.ndf , times = (gg.dat.nrow.sheep.hi.ndf   ) ) 
-          , rep( mod.1.form.label.r2.gt.lo.ndf , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
-         , rep( mod.1.form.label.r2.gt.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
-      )
+     # col.label.r2.form  <- c(
+      #  rep( mod.1.form.label.r2.sp.lo.ndf , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
+       # , rep( mod.1.form.label.r2.sp.hi.ndf , times = (gg.dat.nrow.sheep.hi.ndf   ) ) 
+       #   , rep( mod.1.form.label.r2.gt.lo.ndf , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
+        # , rep( mod.1.form.label.r2.gt.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
+   #  )
       
-      col.label.r3.form  <- c(
-        rep( mod.1.form.label.r3.sp.lo.ndf , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
-        , rep( mod.1.form.label.r3.sp.hi.ndf , times = (gg.dat.nrow.sheep.hi.ndf   ) ) 
-          , rep( mod.1.form.label.r3.gt.lo.ndf , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
-          , rep( mod.1.form.label.r3.gt.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
-      )
+     # col.label.r3.form  <- c(
+      #  rep( mod.1.form.label.r3.sp.lo.ndf , times = (gg.dat.nrow.sheep.lo.ndf   ) ) 
+      #  , rep( mod.1.form.label.r3.sp.hi.ndf , times = (gg.dat.nrow.sheep.hi.ndf   ) ) 
+        #  , rep( mod.1.form.label.r3.gt.lo.ndf , times = (gg.dat.nrow.goat.lo.ndf   ) ) 
+        #  , rep( mod.1.form.label.r3.gt.hi.ndf , times = (gg.dat.nrow.goat.hi.ndf   ) ) 
+    #  )
       
       col.coef.bw_kg <- c( 
         rep( d.gbr[gbm.cond.shp.lo.ndf ,  'ws.coef.bw_kg' ][1] , times = gg.dat.nrow.sheep.lo.ndf )  
         ,  rep( d.gbr[gbm.cond.shp.hi.ndf ,  'ws.coef.bw_kg' ][1] , times = gg.dat.nrow.sheep.hi.ndf )  
-         ,  rep( d.gbr[gbm.cond.gt.lo.ndf ,  'ws.coef.bw_kg' ][1] , times = gg.dat.nrow.goat.lo.ndf )  
-         ,  rep( d.gbr[gbm.cond.gt.hi.ndf ,  'ws.coef.bw_kg' ][1] , times = gg.dat.nrow.goat.hi.ndf )  
+       #  ,  rep( d.gbr[gbm.cond.gt.lo.ndf ,  'ws.coef.bw_kg' ][1] , times = gg.dat.nrow.goat.lo.ndf )  
+       #  ,  rep( d.gbr[gbm.cond.gt.hi.ndf ,  'ws.coef.bw_kg' ][1] , times = gg.dat.nrow.goat.hi.ndf )  
       )
       
       col.coef.intercept <- c( 
         rep( d.gbr[   gbm.cond.shp.lo.ndf ,  'ws.coef.intercept' ][1] , times = gg.dat.nrow.sheep.lo.ndf )  
         ,  rep( d.gbr[gbm.cond.shp.hi.ndf ,  'ws.coef.intercept' ][1] , times = gg.dat.nrow.sheep.hi.ndf )  
-          ,  rep( d.gbr[gbm.cond.gt.lo.ndf  ,  'ws.coef.intercept' ][1] , times = gg.dat.nrow.goat.lo.ndf  )  
-          ,  rep( d.gbr[gbm.cond.gt.hi.ndf ,  'ws.coef.intercept' ][1] , times = gg.dat.nrow.goat.hi.ndf  )  
+      #    ,  rep( d.gbr[gbm.cond.gt.lo.ndf  ,  'ws.coef.intercept' ][1] , times = gg.dat.nrow.goat.lo.ndf  )  
+      #    ,  rep( d.gbr[gbm.cond.gt.hi.ndf ,  'ws.coef.intercept' ][1] , times = gg.dat.nrow.goat.hi.ndf  )  
         
       )
       
@@ -1110,9 +1133,9 @@ if ( vers == "pmetric") {
   gg.dat$coef.bw_kg <- col.coef.bw_kg ; 
   gg.dat$coef.intercept <- col.coef.intercept
   
-  gg.dat$label.form.r1 <- col.label.r1.form
-  gg.dat$label.form.r2 <- col.label.r2.form
-  gg.dat$label.form.r3 <- col.label.r3.form
+  #gg.dat$label.form.r1 <- col.label.r1.form
+ # gg.dat$label.form.r2 <- col.label.r2.form
+ # gg.dat$label.form.r3 <- col.label.r3.form
   
 }
 
@@ -1179,6 +1202,34 @@ assign.best.model <<- function( r.cond  , d.gbr ){
   
   return (d.gbr)
 }
+
+
+
+
+assign.best.model.all.forms <<- function( r.cond  , d.gbr ){
+  
+  # test: r.cond <- species.ndf.form.cond.pmetric 
+  
+  
+  optim.metric <- max( na.omit(  d.gbr[   r.cond,  optimization.metric.var.name.1 ])  )
+  
+  
+  optim.mod.vers.form.indx <- which( d.gbr[,optimization.metric.var.name.1]  ==  optim.metric    )
+  
+  optim.mod.vers <-  d.gbr[  optim.mod.vers.form.indx, 'mod.vers' ] 
+  optim.mod.form <-  d.gbr[  optim.mod.vers.form.indx, 'mod.form' ] 
+  d.gbr[optim.mod.vers.form.indx, 'is.best.global.model' ] <-  TRUE
+  
+  
+  d.gbr[r.cond, vn.best.global.w.R2  ] <- d.gbr[optim.mod.vers.form.indx, optimization.metric.var.name.1 ][1] 
+  d.gbr[r.cond, vn.best.global.w.nRMSE ] <- d.gbr[optim.mod.vers.form.indx, vn.w.nRMSE.mean ][1] 
+  d.gbr[r.cond , vn.best.global.w.CCC ] <- d.gbr[optim.mod.vers.form.indx, vn.w.CCC.mean ][1]   
+  
+  # Add coefficient data here.
+  
+  return (d.gbr)
+}
+
 
 xtract.x.vars <<- function( formula   ){
   

@@ -40,7 +40,7 @@ ndf.levs <- c( ndf.lev.lo ,ndf.lev.hi )
 ndf.labs <- c( 'low NDF' ,'high NDF')
 
 
-species.srs <- c(species.sheep , species.goat)
+
 
 species.lc.plural.labs <- c('sheep' , 'goats')
 
