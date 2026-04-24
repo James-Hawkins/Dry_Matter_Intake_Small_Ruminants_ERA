@@ -5,7 +5,7 @@
 random.exp.int <<- FALSE
 
 # age.status <<- 'growing'
-# age.status <<- NA
+ age.status <<- NA
 
 
 y.var <<- 'feed_intake_g_d'
@@ -20,7 +20,12 @@ cutoff.ol.s <<- 3
 include.redf <<- FALSE
 
 
+# coefficients and constants
 
+base.nat.log.e <<- 2.71828
+
+
+SE.scalar.90.pci <<- 1.65 ; SE.scalar.95.pci <<- 1.95 ; SE.scalar.99.pci <<- 2.65
 
 
 
@@ -39,11 +44,21 @@ n.species <<- 1
 n.ndf <<- 2
 
 # Hyper-parameters
-p.k <- 5
-n.mod.form <<- 4
+m.stop.cv <<- TRUE
+cv.risk.min.grid <<- 100
+cv.risk.max.grid <<- 5000
+
+p.k <- 4
+n.mod.form <<- 3
 n.mod.v.family <<- 1
 n.mod.v.boost.control.mstop <<- 1
-n.mod.v.boost.control.nu <<- 9
+n.mod.v.boost.control.nu <<- 1
+
+
+mstop.max <<- 3000; mstop.min <<- 1000 ; m.stop.range <<- (mstop.max - mstop.min)
+nu.max <<- 0.1 ; nu.min <<- 0.1 ; nu.range <<- (nu.max - nu.min)
+
+
 
 
 optimization.metric.var.name.1 <<- vn.w.R2.mean

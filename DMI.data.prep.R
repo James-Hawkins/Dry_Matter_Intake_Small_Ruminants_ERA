@@ -1,5 +1,12 @@
 
 
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+getwd()
+
+
+source('libraries.R') ; source('functions.R') ; source('parameters.R') 
+
+
 d.raw <<- read_excel( str_c( parent.dir , 'Srum_master_ERA_data.xlsx')
                  , sheet = 'feed_intake_raw' 
                  , col_types = "text")
@@ -152,11 +159,7 @@ d <- as.data.frame(d.raw)
   d[  d$is_lactating ==  1 & !is.na(d$is_lactating ) , 'milk_kg_day' ] 
  
   
-  
 
-  
-  
-  
 
   print(paste('Quantity of studies before outlier removal: ', length(unique(d$B.Code))))
   d <- d[ !is.na(d$feed_intake_kg_d) , ]

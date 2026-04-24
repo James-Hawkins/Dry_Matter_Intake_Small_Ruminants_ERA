@@ -97,7 +97,7 @@ dat.out <-  data.frame(
 
 r.count <- 1
 
-for (s in species.srs){
+for (s in species.srs[1]){
 for (n in ndf.levs ){
 for (mf in 1:n.mod.form){
   
@@ -124,6 +124,7 @@ for (mf in 1:n.mod.form){
   dat.out[ r.count  , 'coef.bw.kg'  ] <-  d.gbr.row$mean.coef.BW
   dat.out[ r.count  , 'coef.adg.g.d'  ] <-  d.gbr.row$mean.coef.ADG
   dat.out[ r.count  , 'coef.ndf.g.kg'  ] <-  d.gbr.row$mean.coef.NDF
+  dat.out[ r.count  , 'coef.cp.g.kg'  ] <-  d.gbr.row$mean.coef.CP
   
   
   r.count <- r.count + 1

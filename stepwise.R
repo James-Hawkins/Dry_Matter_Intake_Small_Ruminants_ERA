@@ -1,7 +1,5 @@
 
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-getwd()
 
 
 """
@@ -20,8 +18,6 @@ rm(list = ls())
 
 save.image('dmi.estm8.RData')
 load('dmi.estm8.RData')
-
-source('libraries.R') ; source('functions.R') ; source('parameters.R') ; source('DMI.data.prep.R') 
 
 
 # Data prep 
@@ -244,6 +240,13 @@ print(paste('Sample size (animal units) goats - high NDF:' , sum(s.rums[s.rums$N
 
 
 
+# variable correlations
+
+s.rums$adg_g_day
+
+cor( s.rums[, 'bw_kg']  , s.rums[, 'adg_g_day']  )
+
+
 # Define sub-samples
 
 length(   unique(s.rums[ s.rums$Stage != na.value ,  'B.Code'])  ) / length(   unique(s.rums[  ,  'B.Code'])  )
@@ -310,6 +313,18 @@ for (s in c(species.sheep , species.goat)){
 for (n in c(ndf.lev.lo  , ndf.lev.hi )){
 for (v in all.vars){
   
+test <- function(){
+  
+  v <- all.vars[2] 
+  s <- species.sheep
+  n <- ndf.lev.hi
+  
+  
+}
+
+s.rums.r.cond <- (s.rums$Species== s & s.rums$ndf.level == n )
+  
+
     
 optim.tform.dat[r.cnt,'variable'] <- v
 optim.tform.dat[r.cnt,'species'] <- s
@@ -319,6 +334,19 @@ parms <- optim.tform(s.rums , v, s , n )
 
 optim.tform.dat[optim.tform.dat$species == s & optim.tform.dat$ndf.level == n & optim.tform.dat$variable == v, 'optim.tform']  <- parms[1]
 optim.tform.dat[optim.tform.dat$species == s & optim.tform.dat$ndf.level == n & optim.tform.dat$variable == v , 'var.name']  <- parms[2]
+
+
+
+SW.t.stat.null <- parms[3][[1]][1]
+SW.t.stat.log <- parms[3][[1]][2]
+SW.t.stat.sqt <- parms[3][[1]][3]
+SW.t.stat.sqd <- parms[3][[1]][4]
+SW.t.stat.mm.s <- parms[3][[1]][5]
+SW.t.stat.mean.s <- parms[3][[1]][6]
+
+
+# merge these with variable name to add to main s.rums dataframe
+
 
 r.cnt <- r.cnt + 1
 }
@@ -373,6 +401,8 @@ frac.cond.1.goats.hi.ndf - unique(length( s.rums[ cond.grad.1.goats.hi.ndf  & co
 
 }
 
+
+View(optim.tform.dat)
 
 normzd.DVs <- unique( optim.tform.dat[ optim.tform.dat$variable == y.var.reg  , 'var.name'])
 normzd.DGs <- unique( optim.tform.dat[ optim.tform.dat$variable == v.list.DG[2]  , 'var.name'])
