@@ -46,13 +46,15 @@ n.ndf <<- 2
 # Hyper-parameters
 m.stop.cv <<- TRUE
 cv.risk.min.grid <<- 100
-cv.risk.max.grid <<- 5000
+cv.risk.max.grid <<- 1200
 
-p.k <- 4
-n.mod.form <<- 3
-n.mod.v.family <<- 1
+p.k <- 2
+n.mod.form <<- 2
+n.mod.v.family <<- 2
 n.mod.v.boost.control.mstop <<- 1
 n.mod.v.boost.control.nu <<- 1
+
+ml.boost.families <<- c( Gaussian() , Laplace() , Huber())
 
 
 mstop.max <<- 3000; mstop.min <<- 1000 ; m.stop.range <<- (mstop.max - mstop.min)
@@ -64,10 +66,11 @@ nu.max <<- 0.1 ; nu.min <<- 0.1 ; nu.range <<- (nu.max - nu.min)
 optimization.metric.var.name.1 <<- vn.w.R2.mean
 
 
-x.vars <<- c(  
+all.x.vars <<- c(  
     
     "bw_kg" 
     , 'BW_frac_Mat_BW'
+    , 'Met_bw_kg'
     , "bw_kg.e25" 
     , "bw_kg.sqt" 
     , "bw_kg.e75"  

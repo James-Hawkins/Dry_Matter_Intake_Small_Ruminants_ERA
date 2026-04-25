@@ -2,6 +2,15 @@
 
 source('functions.R') ; source('m.boost.params.R')
 
+
+
+# Load workspace components
+coefs.table.out <-  function() { source(   str_c(  results.dir  ,'table.coefs.R')  ) }
+box.fig.out <-  function() { source(   str_c(  results.dir  ,'box.plot.R')  ) }
+
+valid.plots.out <-  function() { source(   str_c(  results.dir  ,'valid.plots.R')  ) }
+
+
 # to DO
 # create keyword for ue.id and ut.id and use consistently
 # replace colnames in d.gbr with global character objects
@@ -9,13 +18,16 @@ source('functions.R') ; source('m.boost.params.R')
 
 # add functionality for greater formula configurations
 
+# plots for variable importance
+
+
 { 
   
 
   
 source('m.boost.params.R') ; source('functions.R') 
   
-  s.rums.gbr <- s.rums[]   
+s.rums.gbr <- s.rums[]   
   
 s.rums$ut.id <- NA
 s.rums$ue.id <- NA  
@@ -214,7 +226,7 @@ vn.w.CCC.sd<-'w.CCC.sd'
 d.gbr <- data.frame( matrix(NA, nrow = n.rows, ncol = 1) )
 
 
-
+d.gbr[, 'loop.iter' ] <- NA
 
 # Sample and model descriptors
 d.gbr[, 'species' ] <- col.species
@@ -484,9 +496,10 @@ names[which( var.imps == var.imps.ordered[8] ) ]
   
   
   
+
 mod.1.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg + adg_g_day + NDF_nutrition  )
-mod.2.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg.e75 + adg_g_day + NDF_nutrition )
-mod.3.sp.lo.ndf <- as.formula(  feed_intake_g_d  ~  bw_kg.e75 + adg_g_day +  NDF_nutrition.sqd  + CP_nutrition.log )
+mod.2.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg + bw_kg.sqd + adg_g_day + NDF_nutrition )
+mod.3.sp.lo.ndf <- as.formula(  feed_intake_g_d  ~  bw_kg.e75 + adg_g_day +  NDF_nutrition  + CP_nutrition )
 mod.4.sp.lo.ndf <- as.formula(   feed_intake_g_d  ~ bw_kg.e75 + bw_kg.sqd + adg_g_day + NDF_nutrition + CP_nutrition  )
 
 mod.1.sp.hi.ndf <- mod.1.sp.lo.ndf
@@ -550,13 +563,14 @@ if (r == 1) { d.gbr <- d.gbr.null ; start.time <- Sys.time()}
 
 print(paste('Running iteration ' , r , 'of ', nrow(d.gbr)))
   
-#  r <- 1
+#  r <- 6
 #if (r == 11){ break }
 
 {
   
 {
   
+d.gbr[r, 'loop.iter' ] <- r
 species <-   d.gbr[r, 'species'] 
 ndf  <-   d.gbr[r, 'ndf'] 
 k <-  d.gbr[r,'k']
@@ -724,6 +738,7 @@ d.gbr[r, 'train.w.nrmse'] <- de.listify( gen.eval.metrics( model  ,  formula ,tr
 
 
 {
+  
   
 form.lhs <- as.character(formula[[2]])
 ws.observed.tformd <-  all.data[,  form.lhs  ] 
@@ -911,33 +926,34 @@ if ( k == p.k &  mv == col.mod.vers[  length(col.mod.vers )  ]   ) {
   
   species.ndf.form.cond <- (d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf  )
   
-  cond.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 1)
-  cond.n.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 2)
+  cond.pmetric <-  rep(TRUE, nrow(d.gbr)) #(substr(d.gbr$mod.vers , 1 ,1 ) == 1)
+ # cond.n.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 2)
   
   species.ndf.form.cond.pmetric <- species.ndf.form.cond & cond.pmetric
-  species.ndf.form.cond.n.pmetric <- species.ndf.form.cond & cond.n.pmetric
+ # species.ndf.form.cond.n.pmetric <- species.ndf.form.cond & cond.n.pmetric
   
   # Parametric model
 
   d.gbr <- assign.best.model(species.ndf.form.cond.pmetric , d.gbr )
-  d.gbr <- assign.best.model(species.ndf.form.cond.n.pmetric , d.gbr)
+ # d.gbr <- assign.best.model(species.ndf.form.cond.n.pmetric , d.gbr)
+
 
 }
   
-# Model identification 2 -- best performing among all formula (i.e. across hyperparameters)
+# Model identification 2 -- best performing among all formula (i.e. across hyperparameters and formulae)
 if ( k == p.k & mv == col.mod.vers[  length(col.mod.vers )  ] & mf == n.mod.form  ) {
   
   species.ndf.best.mod.cond <- (d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$is.best.model  )
   
-  cond.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 1)
-  cond.n.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 2)
+  cond.pmetric <-  cond.pmetric <-  rep(TRUE, nrow(d.gbr)) #(substr(d.gbr$mod.vers , 1 ,1 ) == 1) (substr(d.gbr$mod.vers , 1 ,1 ) == 1)
+#cond.n.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 2)
   
   species.ndf.form.cond.pmetric <- species.ndf.best.mod.cond  & cond.pmetric
-  species.ndf.form.cond.n.pmetric <- species.ndf.best.mod.cond  & cond.n.pmetric
+ # species.ndf.form.cond.n.pmetric <- species.ndf.best.mod.cond  & cond.n.pmetric
   
   
   d.gbr <- assign.best.model.all.forms(species.ndf.form.cond.pmetric , d.gbr )
-  d.gbr <- assign.best.model.all.forms(species.ndf.form.cond.n.pmetric , d.gbr)
+ # d.gbr <- assign.best.model.all.forms(species.ndf.form.cond.n.pmetric , d.gbr)
   
 }
 
@@ -957,10 +973,19 @@ gbr.out()
 
 
 
+
 View(d.gbr)
 
 gbr.out()
 
+
+
+valid.plots.out()
+
+
+
+coefs.table.out()
+box.fig.out()
 
 
 # ---- PLOTS -------

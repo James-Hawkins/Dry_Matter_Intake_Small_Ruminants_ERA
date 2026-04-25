@@ -123,8 +123,6 @@ for (mf in 1:n.mod.form){
   coef.CP.mean <- round( d.gbr.row$mean.coef.CP , 2)
   
   
-  
-  
   # Standard deviations of coefficient
   coef.BW.se <- round( d.gbr.row$sd.coef.BW , 2)
   coef.ADG.se <- round( d.gbr.row$sd.coef.ADG , 2)
@@ -133,19 +131,18 @@ for (mf in 1:n.mod.form){
   
   
 
-if (!is.na(coef.BW.mean )  & !is.na(coef.BW.sd) ) { stars.bw <- stat.significance( coef.BW.mean  , coef.BW.sd) } else { stars.bw <- ''}
-if (!is.na(coef.ADG.mean )  & !is.na(coef.ADG.sd) ) { stars.adg <-stat.significance( coef.ADG.mean  , coef.ADG.sd) } else { stars.adg <- ''}
-if (!is.na(coef.NDF.mean )  & !is.na(coef.NDF.sd) ) { stars.ndf <-stat.significance( coef.NDF.mean  , coef.NDF.sd) } else { stars.ndf <- ''}
-if (!is.na(coef.CP.mean )  & !is.na(coef.CP.sd) ) { stars.cp <-stat.significance( coef.CP.mean  , coef.CP.sd) } else { stars.cp <- ''}
-  
+if (!is.na(coef.BW.mean )  & !is.na(coef.BW.se) ) { stars.bw <- stat.significance( coef.BW.mean  , coef.BW.se) } else { stars.bw <- ''}
+if (!is.na(coef.ADG.mean )  & !is.na(coef.ADG.se) ) { stars.adg <- stat.significance( coef.ADG.mean  , coef.ADG.se) } else { stars.adg <- ''}
+if (!is.na(coef.NDF.mean )  & !is.na(coef.NDF.se) ) { stars.ndf <- stat.significance( coef.NDF.mean  , coef.NDF.se) } else { stars.ndf <- ''}
+if (!is.na(coef.CP.mean )  & !is.na(coef.CP.se) ) { stars.cp <-stat.significance( coef.CP.mean  , coef.CP.se) } else { stars.cp <- ''}
   
   
 
   pls.mns <- ' \u00B1 '
-  coef.BW.mn.plus.sd <- str_c( coef.BW.mean  , pls.mns , coef.BW.sd   , stars.bw)
-  coef.ADG.mn.plus.sd <- str_c( coef.ADG.mean  , pls.mns , coef.ADG.sd  , stars.adg)
-  coef.NDF.mn.plus.sd <- str_c( coef.NDF.mean  , pls.mns , coef.NDF.sd , stars.ndf)
-  coef.CP.mn.plus.sd <- str_c( coef.CP.mean  , pls.mns , coef.CP.sd , stars.cp)
+  coef.BW.mn.plus.sd <- str_c( coef.BW.mean  , pls.mns , coef.BW.se   , stars.bw)
+  coef.ADG.mn.plus.sd <- str_c( coef.ADG.mean  , pls.mns , coef.ADG.se  , stars.adg)
+  coef.NDF.mn.plus.sd <- str_c( coef.NDF.mean  , pls.mns , coef.NDF.se , stars.ndf)
+  coef.CP.mn.plus.sd <- str_c( coef.CP.mean  , pls.mns , coef.CP.se , stars.cp)
   
   
   dat.out[ r.count  , 'all.coef.bw.kg'  ] <-  coef.BW.mn.plus.sd

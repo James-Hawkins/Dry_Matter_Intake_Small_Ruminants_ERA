@@ -415,6 +415,12 @@ observed.tformd <-  d[,  form.lhs  ]
   tss <- sum( (y - mean(y))^2 )
   r2 <- 1 -  rss/ tss
   
+
+  k <- length(labels(terms(form)))
+  n <- nrow(train.data)
+  
+  r2.adj <- 1 - (1 - r2)*(n - 1) / (n - k - 1)
+  
   
   # WEIGHTED PERFORMANCE METRICS
   weights <- gen.weights( t.ids , e.ids  ) 
@@ -433,7 +439,9 @@ observed.tformd <-  d[,  form.lhs  ]
   w.tss <- sum( weights * (y - mean(y))^2 )
   w.r2 <- 1 - w.rss / w.tss
   
-  return.item <- c(  listify( r2 ) ,  listify(nrmse )  , listify( w.r2 ) ,  listify(w.nrmse )  )
+  w.r2.adj <- 1 - (1 - w.r2)*(n - 1) / (n - k - 1)
+  
+  return.item <- c(  listify( r2.adj ) ,  listify(nrmse )  , listify( w.r2.adj ) ,  listify(w.nrmse )  )
   
   return ( return.item   )
   
@@ -446,7 +454,7 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
   test <- function(){
     
     form <- formula
-    data <- train.data
+    data <- all.data
     mod.v <-  d.gbr[r, 'mod.vers'] 
     
   }
@@ -456,29 +464,29 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
   cur.mstop.index <-  as.numeric( substr(mod.v , 3 , 3) )
   cur.nu.index <- as.numeric(  substr(mod.v , 5 , 5))
   
-  family.list <- c(   1  ,  2  ) ;   mod.fam.gaussian <- 1 ; mod.fam.gbm <- 2
+  family.list <- c(   1  ,  2  ) ;   mod.fam.gaussian <- 1 ; mod.fam.laplace <- 2
   
-  
-  
+
   mstop.list <- seq( mstop.min , mstop.max , by =  m.stop.range /    n.mod.v.boost.control.mstop )
   nu.list <- seq( nu.min , nu.max  , by =  nu.range /      n.mod.v.boost.control.nu  )
   
-  family <- family.list[  cur.family.index ]
+  family <- de.listify(ml.boost.families[  cur.family.index ])
   mstop <-  mstop.list[cur.mstop.index]
   nu <- nu.list[cur.nu.index]
   
-  
+
   mod.0 <- glmboost( 
     
     form  
     
     , data =  data
     
-    , family = Gaussian()
+    , family =    family
    # ,  control = boost_control(mstop =   mstop , nu = nu)
     , center = FALSE
     
   )
+  
 
   if (   m.stop.cv   ){
     
@@ -495,7 +503,7 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
   
   data$ue.id <- factor(  data$ue.id )
   
-if (  family == mod.fam.gaussian ){ 
+if (  1 ==  1){ 
   
   model <- glmboost( 
     
@@ -503,19 +511,31 @@ if (  family == mod.fam.gaussian ){
     
     , data =  data
     
-    , family = Gaussian()
+    , family =  family
     ,  control = boost_control(mstop =   mstop, nu = nu)
     , center = FALSE
     
   )
   
   
-  
 
   # summary(  model )
   
   
-  } else if (  family == mod.fam.gbm  ) { 
+  } else if (  family == mod.fam.laplace  ) { 
+    
+
+    model <- glmboost( 
+      
+      form  
+      
+      , data =  data
+      
+      , family = Gaussian()
+      ,  control = boost_control(mstop =   mstop, nu = nu)
+      , center = FALSE
+      
+    )
     
    # model <-  gbm(
     #  form  , 
@@ -529,22 +549,21 @@ if (  family == mod.fam.gaussian ){
       #  n.trees = 500          # Number of trees (boosting iterations)
    #@ )
     
-    model <- xgboost(
-      data = data[,cols.2.include] 
-      , formula =     form 
-      , label = data[,  y.var  ]
-      , max.depth = 3
-      , eta = 1
+    #  model <- xgboost(
+    # data = data[,cols.2.include] 
+    #, formula =     form 
+    #, label = data[,  y.var  ]
+    # , max.depth = 3
+    # , eta = 1
      # , nthread = 2
      # , nrounds = 2
-      , objective = "reg:squarederror"
-      )
+    # , objective = "reg:squarederror"
+    #  )
  
  
-    xgb.importance(feature_names = cols.2.include, model = model)
+    # xgb.importance(feature_names = cols.2.include, model = model)
     
-    
-    
+  
   }
   
   return.item <- c( listify(model) ,  mstop ,   nu )
@@ -613,12 +632,12 @@ gen.formula.label.1r <<- function(  form.obj ){
   comma <- ', '
   
   
-  b1 <- gen.var.alias(  x.vars[ which( x.vars ==  rhs.c.1 )  ]  )
-  b2 <- gen.var.alias( x.vars[ which( x.vars ==  rhs.c.2 )  ] )
-  b3 <- gen.var.alias( x.vars[ which( x.vars ==  rhs.c.3 )  ] )
+  b1 <- gen.var.alias(  all.x.vars[ which( all.x.vars ==  rhs.c.1 )  ]  )
+  b2 <- gen.var.alias( all.x.vars[ which( all.x.vars ==  rhs.c.2 )  ] )
+  b3 <- gen.var.alias( all.x.vars[ which( all.x.vars ==  rhs.c.3 )  ] )
   
-  if (  !is.na(rhs.c.4) ){ b4 <- gen.var.alias( x.vars[ which( x.vars ==  rhs.c.4 )  ] )  }
-  if (  !is.na(rhs.c.5) ){ b5 <- gen.var.alias( x.vars[ which( x.vars ==  rhs.c.5 )  ] )  }
+  if (  !is.na(rhs.c.4) ){ b4 <- gen.var.alias(  all.x.vars[ which(  all.x.vars ==  rhs.c.4 )  ] )  }
+  if (  !is.na(rhs.c.5) ){ b5 <- gen.var.alias(  all.x.vars[ which(  all.x.vars ==  rhs.c.5 )  ] )  }
   
 
   lab <- paste0(  begin,   b1 , comma , b2 , comma , b3 )
@@ -757,7 +776,7 @@ gbr.out <<- function(){
   
   cols.2.export <- colnames(d.gbr)[ which( !(colnames(d.gbr) %in% cols.not.2.export) )  ]
   
-  d.export<- d.gbr[  , cols.2.export ]
+  d.export <- d.gbr[  , cols.2.export ]
   
   
   for (c in 1:ncol(d.export)){
@@ -777,7 +796,7 @@ gbr.out <<- function(){
   }
   
   d.export.sheep.lon <- d.export[ d.export$species  == "Sheep" & d.export$ndf == ndf.lev.lo , cols.2.export ]
-  d.export.sheep.hin <- d.gbr[ d.export$species  == "Sheep" & d.export$ndf == ndf.lev.hi  , cols.2.export ]
+  d.export.sheep.hin <- d.export[ d.export$species  == "Sheep" & d.export$ndf == ndf.lev.hi  , cols.2.export ]
  # d.export.goat.lon <- d.gbr[ d.export$species  == "Goat" & d.export$ndf == ndf.lev.lo , cols.2.export ]
  # d.export.goat.hin <- d.gbr[ d.export$species  == "Goat" & d.export$ndf == ndf.lev.hi , cols.2.export ]
   
@@ -793,7 +812,7 @@ gbr.out <<- function(){
 
 gen.gg.df.specific <<- function(  cur.mod , vers , species , ndf){
   
-  # cur.mod <- 1; vers <- 'pmetric'
+  # cur.mod <- 3; vers <- 'pmetric'
   # cur.mod <- 1 ; vers <- 'n.pmetric'
   
   
@@ -855,8 +874,16 @@ gen.gg.df.specific <<- function(  cur.mod , vers , species , ndf){
 
     gg.dat.labl.ccc <- paste0("CCC = ",   mod.1.ccc )
 
-    gg.dat.labl.R2 <- paste0("R", supsc("2") , " = ", mod.1.r2 )
-
+   # gg.dat.labl.R2 <- #expression("R"[adj]*"10" ^ 2)
+      
+    #  paste0("R", supsc("2") , subsc('a') , " = ",  mod.1.r2 )
+      
+     # paste("R"['adh']^2 , " = ",  '1' )
+      
+     
+    gg.dat.labl.R2 <- paste0("R", supsc("2") ,  "adj = ",  mod.1.r2 )
+      
+      
     gg.dat.labl.nRMSE <- paste0("nRMSE(%) = ",  mod.1.nRMSE )
     
     mod.ss <- d.gbr[  gbm.cond.opt.mod &  d.gbr$mod.form == cur.mod,  'total.sample.size' ][1]
@@ -1075,9 +1102,7 @@ assign.best.model <<- function( r.cond  , d.gbr ){
   
   # test: r.cond <- species.ndf.form.cond.pmetric
   
-  
   optim.metric <- max( na.omit(  d.gbr[   r.cond,  optimization.metric.var.name.1 ])  )
-  
   
   optim.mod.vers.indx <- which( d.gbr[,optimization.metric.var.name.1]  ==  optim.metric    )
   
@@ -1088,6 +1113,8 @@ assign.best.model <<- function( r.cond  , d.gbr ){
   d.gbr[r.cond, vn.best.w.R2  ] <- d.gbr[optim.mod.vers.indx, optimization.metric.var.name.1 ][1] 
   d.gbr[r.cond, vn.best.w.nRMSE ] <- d.gbr[optim.mod.vers.indx, vn.w.nRMSE.mean ][1] 
   d.gbr[r.cond , vn.best.w.CCC ] <- d.gbr[optim.mod.vers.indx, vn.w.CCC.mean ][1]   
+  
+
   
   # Add coefficient data here.
   
@@ -1116,6 +1143,7 @@ assign.best.model.all.forms <<- function( r.cond  , d.gbr ){
   d.gbr[r.cond, vn.best.global.w.nRMSE ] <- d.gbr[optim.mod.vers.form.indx, vn.w.nRMSE.mean ][1] 
   d.gbr[r.cond , vn.best.global.w.CCC ] <- d.gbr[optim.mod.vers.form.indx, vn.w.CCC.mean ][1]   
   
+
   # Add coefficient data here.
   
   return (d.gbr)
@@ -1218,8 +1246,8 @@ stat.significance <- function( coef, se){
   
   test <- function(){
     
-    coef <- coef.ADG.mean
-    se <-   coef.ADG.sd 
+    coef <- coef.NDF.mean
+    se <-   coef.NDF.se 
     
   }
   
@@ -1232,10 +1260,11 @@ stat.significance <- function( coef, se){
   if (sign == 90){ sign <- ifelse( !between(0, ( coef - range.90.pca ), ( coef + range.90.pca  ) ), 95 , 0) }
   if (sign == 95){ sign <-  ifelse( !between(0, ( coef - range.90.pca ), ( coef + range.90.pca  ) ), 99 , 0)}
   
+  if (sign == 0){stars <- ''}
   if (sign == 90){stars <- '*'}
   if (sign == 95){stars <- '**'}
   if (sign == 99){stars <- '***'}
   
-  return (stars)
+  return (  stars  )
   
 }

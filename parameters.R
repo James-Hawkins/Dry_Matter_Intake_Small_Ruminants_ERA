@@ -1,8 +1,15 @@
 
 
 # File paths
+# Main folders
 parent.dir <<- '../'
 helpers.dir <<- '/Helpers'
+results.dir <<- 'Results/'
+
+
+# Sub-folders
+results.out.dir <<- 'Results/Figures.out/'
+
 
 
 ndf.lev.lo <<- 'low'

@@ -46,6 +46,7 @@ pred.vars <- c(
   , 'NDF_digest'
   
 )
+
 dep.vars <- (  y.var.reg  )
 
 
@@ -71,7 +72,7 @@ s.rums[  (s.rums$outlier.adg) , 'ol.status.var.ranges'] <- TRUE
 
 
 
-# Variable interaction declarations
+# Variable interaction declarations and re-configurations
 s.rums$NDF_x_NDF_digest <- s.rums$NDF_digest * s.rums$NDF_nutrition
 
 
@@ -79,7 +80,9 @@ s.rums[ s.rums$Species == species.sheep , 'BW_frac_Mat_BW'] <- s.rums[ s.rums$Sp
 s.rums[ s.rums$Species == species.goat, 'BW_frac_Mat_BW'] <- s.rums[ s.rums$Species == species.goat, 'bw_kg']  / 35
   
   
+s.rums$Met_bw_kg <- s.rums$bw_kg ^ 0.75
 
+pred.vars <- c( pred.vars ,  'Met_bw_kg' , 'BW_frac_Mat_BW')
 
 # Variable standardization
 {
@@ -134,8 +137,6 @@ for (v in 1:length(min.max.stdz.vars)) {
 }
 
 
-
-all.vars <- c( dep.vars,  pred.vars)
 
 suffixes <- c(
   
@@ -242,7 +243,6 @@ print(paste('Sample size (animal units) goats - high NDF:' , sum(s.rums[s.rums$N
 
 # variable correlations
 
-s.rums$adg_g_day
 
 cor( s.rums[, 'bw_kg']  , s.rums[, 'adg_g_day']  )
 
