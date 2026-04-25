@@ -1,8 +1,12 @@
 
 
+# source('m.boost.params.R')
+
 # GLOBAL SETTINGS
 
 random.exp.int <<- FALSE
+
+fold.by.exp <<- FALSE
 
 # age.status <<- 'growing'
  age.status <<- NA
@@ -10,6 +14,33 @@ random.exp.int <<- FALSE
 
 y.var <<- 'feed_intake_g_d'
 #y.var <<- 'drym_intake_g_d'
+
+
+
+
+#
+
+# comprehensive list of var names
+
+vn.w.R2.mean <<- 'w.R2.mean'
+
+vn.best.w.R2 <<-'best.w.R2'
+vn.best.w.nRMSE <<-'best.w.nRMSE'
+vn.best.w.CCC <<-'best.w.CCC'
+
+
+vn.best.global.w.R2 <<-'best.global.w.R2'
+vn.best.global.w.nRMSE <<-'best.global.w.nRMSE'
+vn.best.global.w.CCC <<-'best.global.w.CCC'
+
+
+vn.w.R2.mean <<-'w.R2.mean'
+vn.w.nRMSE.mean <<-'w.nRMSE.mean'
+vn.w.CCC.mean <<-'w.CCC.mean'
+
+vn.w.R2.sd <<-'w.R2.sd'
+vn.w.nRMSE.sd <<-'w.nRMSE.sd'
+vn.w.CCC.sd<-'w.CCC.sd'
 
 
 # Outlier control
@@ -40,17 +71,19 @@ max.m.stops <<- c( 1500 , 1500 , 1500 , 1500)
 
 # Parameters for model generation
 
+p.k <- 2
 n.species <<- 1
 n.ndf <<- 2
+n.mod.form <<- 2
 
 # Hyper-parameters
-m.stop.cv <<- TRUE
-cv.risk.min.grid <<- 100
-cv.risk.max.grid <<- 1200
+m.stop.cv <<- FALSE
+cv.risk.min.grid <<- 1000
+cv.risk.max.grid <<- 1100
 
-p.k <- 2
-n.mod.form <<- 2
-n.mod.v.family <<- 2
+
+n.mod.types <<- 1
+n.mod.v.family <<- 1
 n.mod.v.boost.control.mstop <<- 1
 n.mod.v.boost.control.nu <<- 1
 
@@ -117,7 +150,7 @@ all.x.vars <<- c(
 
 
 
-form.aliases <<- rep(NA, length(x.vars) )
+form.aliases <<- rep(NA, length(all.x.vars) )
 
 label.alias.BW <<- 'BW'
 label.alias.MBW <<- 'Met_BW'
@@ -128,11 +161,11 @@ label.alias.CP <<- 'CP'
 label.alias.NDFD <<- 'NDFD'
 label.alias.NDFxNDFD <<- 'NDF*NDFD'
 
-for (e in 1:length(x.vars)){
+for (e in 1:length(all.x.vars)){
   
   # test c.var <- x.vars[1]
   
-  c.var <- x.vars[e]
+  c.var <- all.x.vars[e]
   
 if ( str_detect( c.var , 'bw_kg' )   ){  lab.2.add <- label.alias.BW }
 if ( str_detect( c.var , 'bw_kg.e75' )   ){  lab.2.add <- label.alias.MBW }

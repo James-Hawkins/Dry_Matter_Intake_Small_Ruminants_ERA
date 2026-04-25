@@ -7,6 +7,9 @@ getwd()
 source('libraries.R') ; source('functions.R') ; source('parameters.R') 
 
 
+
+
+
 d.raw <<- read_excel( str_c( parent.dir , 'Srum_master_ERA_data.xlsx')
                  , sheet = 'feed_intake_raw' 
                  , col_types = "text")

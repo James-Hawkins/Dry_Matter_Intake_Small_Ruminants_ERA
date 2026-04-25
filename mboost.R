@@ -5,10 +5,19 @@ source('functions.R') ; source('m.boost.params.R')
 
 
 # Load workspace components
+
+
+CV.prep <-  function() { source(   str_c(  data.dir  ,'CV.prep.R')  ) }
+
+
+
+
 coefs.table.out <-  function() { source(   str_c(  results.dir  ,'table.coefs.R')  ) }
 box.fig.out <-  function() { source(   str_c(  results.dir  ,'box.plot.R')  ) }
 
 valid.plots.out <-  function() { source(   str_c(  results.dir  ,'valid.plots.R')  ) }
+
+
 
 
 # to DO
@@ -118,7 +127,7 @@ if ( include.redf ){
 {
 
 
-  n.mod.vers <-  n.mod.v.family * n.mod.v.boost.control.mstop * n.mod.v.boost.control.nu 
+  n.mod.vers <-  n.mod.types  * n.mod.v.family * n.mod.v.boost.control.mstop * n.mod.v.boost.control.nu 
   
   n.mod.v.ids <- c()
   
@@ -147,7 +156,7 @@ nu.count <- nu.count + 1}
 } # Define iterations for hyper parameter tuning
 
 
-n.rows <- n.ndf * n.species * p.k * n.mod.vers * n.mod.form
+n.rows <- n.ndf * n.species * p.k * n.mod.vers * n.mod.form 
   
 
 col.k <- c(  rep ( seq(1,p.k,by=1), n.ndf * n.species * n.mod.vers * n.mod.form  ))
@@ -200,28 +209,6 @@ length(col.species)
 #length(col.k)
 length(col.mod.vers)
   
-
-# comprehensive list of var names
-
-vn.w.R2.mean <- 'w.R2.mean'
-
-vn.best.w.R2 <-'best.w.R2'
-vn.best.w.nRMSE <-'best.w.nRMSE'
-vn.best.w.CCC <-'best.w.CCC'
-
-
-vn.best.global.w.R2 <-'best.global.w.R2'
-vn.best.global.w.nRMSE <-'best.global.w.nRMSE'
-vn.best.global.w.CCC <-'best.global.w.CCC'
-
-
-vn.w.R2.mean <-'w.R2.mean'
-vn.w.nRMSE.mean <-'w.nRMSE.mean'
-vn.w.CCC.mean <-'w.CCC.mean'
-
-vn.w.R2.sd <-'w.R2.sd'
-vn.w.nRMSE.sd <-'w.nRMSE.sd'
-vn.w.CCC.sd<-'w.CCC.sd'
 
 d.gbr <- data.frame( matrix(NA, nrow = n.rows, ncol = 1) )
 
@@ -401,6 +388,9 @@ for (r in 1:nrow(d.gbr)) { d.gbr[ r, 'IDs.remaining'] <- list(list( d.gbr[ r, 't
 } # Data pre processing
 
 
+CV.prep()
+
+
 { 
   
 scoping <- function(){
@@ -563,7 +553,7 @@ if (r == 1) { d.gbr <- d.gbr.null ; start.time <- Sys.time()}
 
 print(paste('Running iteration ' , r , 'of ', nrow(d.gbr)))
   
-#  r <- 6
+#  r <- 1
 #if (r == 11){ break }
 
 {

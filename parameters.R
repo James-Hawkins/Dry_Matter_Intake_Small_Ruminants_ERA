@@ -5,6 +5,7 @@
 parent.dir <<- '../'
 helpers.dir <<- '/Helpers'
 results.dir <<- 'Results/'
+data.dir <<- 'Data.prep/'
 
 
 # Sub-folders

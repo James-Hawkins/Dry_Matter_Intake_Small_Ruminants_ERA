@@ -304,6 +304,17 @@ predict.manual <<- function(form , dat , offset , data.set.type , row ){
   # From whole sample ; form <- formula ; dat <- all.data ; offset <- ws.offset.coef ; data.set.type <- 'whole' ; row <- 1 
   
   
+  test.ds <- function(){
+    
+    form <- formula  
+    dat <- test.data 
+    offset <- model.offset 
+    data.set.type <- 'test' 
+    row <- r 
+    
+  }
+  
+  
   test.test <- function(){
     
     form <- formula 
@@ -459,10 +470,10 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
     
   }
   
-
-  cur.family.index <- as.numeric(substr(mod.v , 1 , 1))
-  cur.mstop.index <-  as.numeric( substr(mod.v , 3 , 3) )
-  cur.nu.index <- as.numeric(  substr(mod.v , 5 , 5))
+  cur.type.index <- as.numeric(substr(mod.v , 1 , 1))
+  cur.family.index <- as.numeric(substr(mod.v , 3 , 3))
+  cur.mstop.index <-  as.numeric( substr(mod.v , 5 , 4) )
+  cur.nu.index <- as.numeric(  substr(mod.v , 7 , 7))
   
   family.list <- c(   1  ,  2  ) ;   mod.fam.gaussian <- 1 ; mod.fam.laplace <- 2
   
@@ -475,6 +486,10 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
   nu <- nu.list[cur.nu.index]
   
 
+  
+if (  cur.type.index == 1){
+    
+    
   mod.0 <- glmboost( 
     
     form  
@@ -565,6 +580,82 @@ if (  1 ==  1){
     
   
   }
+  
+  
+  }  # Gradient boosting regression using mlboost
+  
+if (  cur.type.index == 2){
+    
+
+    if (  1 ==  1){ 
+      
+      model <- glmboost( 
+        
+        form  
+        
+        , data =  data
+        
+        , family =  family
+        ,  control = boost_control(mstop =   mstop, nu = nu)
+        , center = FALSE
+        
+      )
+      
+      
+      
+      # summary(  model )
+      
+      
+    } else if (  family == mod.fam.laplace  ) { 
+      
+      
+      model <- glmboost( 
+        
+        form  
+        
+        , data =  data
+        
+        , family = Gaussian()
+        ,  control = boost_control(mstop =   mstop, nu = nu)
+        , center = FALSE
+        
+      )
+      
+      # model <-  gbm(
+      #  form  , 
+      # data = data[,cols.2.include]  , 
+      # distribution = "gaussian"
+      #  , bag.fraction = 1
+      # , n.minobsinnode = 1
+      #  cv.folds = 5,         # Perform 10-fold cross-validation
+      # shrinkage = .01,       # Learning rate
+      # n.minobsinnode = 10,   # Minimum observations in a terminal node
+      #  n.trees = 500          # Number of trees (boosting iterations)
+      #@ )
+      
+      #  model <- xgboost(
+      # data = data[,cols.2.include] 
+      #, formula =     form 
+      #, label = data[,  y.var  ]
+      # , max.depth = 3
+      # , eta = 1
+      # , nthread = 2
+      # , nrounds = 2
+      # , objective = "reg:squarederror"
+      #  )
+      
+      
+      # xgb.importance(feature_names = cols.2.include, model = model)
+      
+      
+    }
+    
+    
+  }  # Other type
+  
+  
+  
+  
   
   return.item <- c( listify(model) ,  mstop ,   nu )
  
@@ -659,6 +750,8 @@ return.x.vars <- function(  form.obj , data.set.type ,r ){
   # test: form.obj <-  form ; data.set.type <- 'test'
   # test: whole sampple ; form.obj <-  form ; data.set.type <- 'whole' ; r <- 1
   
+
+  
   form.obj <- Reduce(paste, deparse(  form.obj ))
 
   form.obj <- as.character(  form.obj  ) 
@@ -749,6 +842,8 @@ gen.complete.cases <<- function( id.list , formla ){
   formla.list <- all.vars(formla) 
 
   # Why can this not handle ue.id?
+  # all.vars.plus.meta.d <- c(    formla.list , 'ut.id' , 'T.Animals') 
+  
   all.vars.plus.meta.d <- c(    formla.list , 'ut.id' , 'T.Animals') 
   
   df.ss <- s.rums[  s.rums$ut.id %in% id.list , all.vars.plus.meta.d ] 
@@ -1075,7 +1170,7 @@ gen.var.alias <- function( var ){
   suffx <- substr( var, (str_length(var)-3) , (str_length(var)) )
   
  
-  new.prefx <- form.aliases[ which( x.vars == prefx ) ]
+  new.prefx <- form.aliases[ which( all.x.vars == prefx ) ]
   
   new.suffx <- suffixes.labs[ which(suffixes == suffx ) ]
   
@@ -1085,7 +1180,7 @@ gen.var.alias <- function( var ){
   
   } else { 
     
-    new.prefx <- form.aliases[ which( x.vars == var ) ]
+    new.prefx <- form.aliases[ which( all.x.vars == var ) ]
     
     new.lab <-  new.prefx 
   

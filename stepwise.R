@@ -152,6 +152,8 @@ suffixes <- c(
   , '.min.max.s'
 )
   
+all.vars <- c( pred.vars , c(y.var.reg)) 
+
 
 for (v in all.vars){
   
