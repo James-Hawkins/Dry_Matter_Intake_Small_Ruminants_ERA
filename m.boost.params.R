@@ -74,7 +74,7 @@ max.m.stops <<- c( 1500 , 1500 , 1500 , 1500)
 p.k <- 2
 n.species <<- 1
 n.ndf <<- 2
-n.mod.form <<- 2
+n.mod.form <<- 4
 
 # Hyper-parameters
 m.stop.cv <<- FALSE

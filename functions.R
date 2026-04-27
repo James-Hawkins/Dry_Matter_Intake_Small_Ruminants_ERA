@@ -472,7 +472,7 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
   
   cur.type.index <- as.numeric(substr(mod.v , 1 , 1))
   cur.family.index <- as.numeric(substr(mod.v , 3 , 3))
-  cur.mstop.index <-  as.numeric( substr(mod.v , 5 , 4) )
+  cur.mstop.index <-  as.numeric( substr(mod.v , 5 , 5) )
   cur.nu.index <- as.numeric(  substr(mod.v , 7 , 7))
   
   family.list <- c(   1  ,  2  ) ;   mod.fam.gaussian <- 1 ; mod.fam.laplace <- 2
@@ -487,7 +487,7 @@ gen.glm.model <<- function(  data , form   , mod.v      ){
   
 
   
-if (  cur.type.index == 1){
+if (  cur.type.index == 1  ){
     
     
   mod.0 <- glmboost( 
@@ -502,6 +502,8 @@ if (  cur.type.index == 1){
     
   )
   
+  
+
 
   if (   m.stop.cv   ){
     
