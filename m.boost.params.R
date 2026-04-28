@@ -9,7 +9,7 @@ random.exp.int <<- FALSE
 fold.by.exp <<- FALSE
 
 # age.status <<- 'growing'
- age.status <<- NA
+age.status <<- NA
 
 
 y.var <<- 'feed_intake_g_d'
@@ -27,24 +27,56 @@ vn.w.R2.mean <<- 'w.R2.mean'
 vn.best.w.R2 <<-'best.w.R2'
 vn.best.w.nRMSE <<-'best.w.nRMSE'
 vn.best.w.CCC <<-'best.w.CCC'
-
+vn.best.w.AIC <<-'best.w.AIC'
 
 vn.best.global.w.R2 <<-'best.global.w.R2'
 vn.best.global.w.nRMSE <<-'best.global.w.nRMSE'
 vn.best.global.w.CCC <<-'best.global.w.CCC'
-
+vn.best.global.w.AIC <<-'best.global.w.AIC'
 
 vn.w.R2.mean <<-'w.R2.mean'
 vn.w.nRMSE.mean <<-'w.nRMSE.mean'
 vn.w.CCC.mean <<-'w.CCC.mean'
+vn.w.AIC.mean <<-'w.AIC.mean'
 
 vn.w.R2.sd <<-'w.R2.sd'
 vn.w.nRMSE.sd <<-'w.nRMSE.sd'
-vn.w.CCC.sd<-'w.CCC.sd'
-
+vn.w.CCC.sd <<-'w.CCC.sd'
+vn.w.AIC.sd <<- 'w.AIC.sd'
 
 # Outlier control
 ol.status.var.name <<- 'ol.status'
+
+
+
+# Fold conditioning
+vn.train.t.IDS  <<- 'train.t.IDs' 
+vn.train.t.IDS.length   <<- 'train.t.IDs.length' 
+
+vn.test.t.IDS <<- 'test.t.IDs' 
+vn.test.t.IDS.length <<- 'train.t.IDs.length'
+
+vn.t.IDS.CCs <<- 't.ID.CCs'
+vn.t.IDS.CCs.remaining <<- 't.IDS.CCs.remaining'
+
+
+fold.cond.variables.all <<- c(
+  vn.train.t.IDS
+  ,vn.train.t.IDS.length
+  ,vn.test.t.IDS
+  ,vn.test.t.IDS.length
+  , vn.t.IDS.CCs
+  ,vn.t.IDS.CCs.remaining
+  
+  
+  , 'all.treatment.IDs'
+  ,'all.experiment.IDs'
+  ,'total.sample.size'
+  
+)
+
+
+
 
 cutoff.ol.s <<- 3
 
@@ -71,7 +103,7 @@ max.m.stops <<- c( 1500 , 1500 , 1500 , 1500)
 
 # Parameters for model generation
 
-p.k <- 2
+p.k <- 4
 n.species <<- 1
 n.ndf <<- 2
 n.mod.form <<- 4
@@ -137,6 +169,10 @@ all.x.vars <<- c(
     , "CP_nutrition.log"
     
     , "NDF_digest"
+    
+    , 'EE_nutrition'
+    
+    , 'Ash_nutrition'
     
     
     # Interaction terms

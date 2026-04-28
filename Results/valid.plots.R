@@ -19,8 +19,8 @@ print(' Creating validation plots ')
 
 
 {
-  gg.valid.y.tit <<- 'Predicted Intake (g/d)'  
-  gg.valid.x.tit <<- 'Measured Intake (g/d)'  
+  gg.valid.y.tit <<- 'Predicted DMI (g/d)'  
+  gg.valid.x.tit <<- 'Measured DMI (g/d)'  
   
   
   gg.resid.y.tit <<- 'Residuals (g/d)'
@@ -162,7 +162,7 @@ print(' Creating validation plots ')
           ,  'y = x'
         )) +
       guides(color = guide_legend(override.aes = list( ncol = 2 , linetype = c(1, 1))))+
-      guides(color = guide_legend(ncol = 2))
+      guides(color = guide_legend(nrow = 2))
     
     
     return (   plot  ) 

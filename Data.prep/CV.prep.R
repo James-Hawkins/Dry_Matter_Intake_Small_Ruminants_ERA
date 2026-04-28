@@ -2,11 +2,11 @@
 
 # source('CV.prep.R')
 
+source('m.boost.params.R') ; source('functions.R') 
+
 { 
   
   
-  
-  source('m.boost.params.R') ; source('functions.R') 
   
   s.rums.gbr <- s.rums[]   
   
@@ -206,6 +206,7 @@
   d.gbr[ , vn.best.w.R2 ] <- NA
   d.gbr[ , vn.best.w.nRMSE ] <- NA
   d.gbr[ , vn.best.w.CCC ] <- NA
+  d.gbr[ , vn.best.w.AIC ] <- NA
   
   
   d.gbr[ ,  'is.best.model'] <- FALSE
@@ -214,6 +215,7 @@
   d.gbr[ , vn.best.global.w.R2 ] <- NA
   d.gbr[ , vn.best.global.w.nRMSE ] <- NA
   d.gbr[ , vn.best.global.w.CCC ] <- NA
+  d.gbr[ , vn.best.global.w.AIC ] <- NA
   
   d.gbr[ ,  'is.best.global.model'] <- FALSE
   
@@ -222,12 +224,12 @@
   d.gbr[ , vn.w.R2.mean ] <- NA
   d.gbr[ , vn.w.nRMSE.mean ] <- NA
   d.gbr[ , vn.w.CCC.mean ] <- NA
-  
+  d.gbr[ , vn.w.AIC.mean ] <- NA
   
   d.gbr[ , vn.w.R2.sd ] <- NA
   d.gbr[ , vn.w.nRMSE.sd ] <- NA
   d.gbr[ , vn.w.CCC.sd ] <- NA
-  
+  d.gbr[ , vn.w.AIC.sd ] <- NA
   
   d.gbr[ , 'mean.coef.int'] <- NA
   d.gbr[ , 'mean.coef.BW'] <- NA
@@ -258,30 +260,36 @@
   d.gbr[ , 'observed.Y'] <- NA
   d.gbr[ , ' mod.Y '] <- NA
   
-  d.gbr[ , 'gbr.form'] <- NA
-  d.gbr[ , 'gbr.model'] <- NA
+  d.gbr[ , 'form'] <- NA
+  d.gbr[ , 'model'] <- NA
   
-  # Sample sub-setting
-  d.gbr[ , 'total.sample'] <- NA
-  d.gbr[ , 'k.IDs'] <- NA
+  # FOLD CONDITIONNING
+  
+  # Whole sample IDs
+  d.gbr[ , fold.cond.variables.all] <- NA
+  
+
+  
+  # Fold sub-setting
+  # d.gbr[ , 'fold.t.IDs'] <- NA
+  # d.gbr[ , 'fold.t.IDs.length'] <- NA
+  d.gbr[ , vn.t.IDS.CCs.remaining ] <- NA
+  
+  # Test - train split
+  d.gbr[ , vn.train.t.IDS ] <- NA
+  d.gbr[ , vn.train.t.IDS.length ] <- NA
+  d.gbr[ ,  vn.test.t.IDS ] <- NA
+  d.gbr[ , vn.test.t.IDS.length ] <- NA
+  
   
   d.gbr[ , 'r.cond'] <- NA
   d.gbr[ , 'all.data'] <- NA
-  d.gbr[ , 'sample.size'] <- NA
-  
-  d.gbr[ , 'treatment.IDs.CCs'] <- NA
-  d.gbr[ , 'all.treatment.IDs'] <- NA
   
   
-  d.gbr[ , 'treatment.IDs'] <- NA
+
   
-  d.gbr[ , 'experiment.IDs'] <- NA
-  d.gbr[ , 'train.IDs'] <- NA
-  d.gbr[ , 'k.IDs.length '] <- NA
-  d.gbr[ , 'train.IDs.length'] <- NA
-  
-  colnames(d.gbr)
-  
+
+
   # nrow(d.gbr)
   
   
@@ -313,18 +321,18 @@
   ue.ids.gt.hi.ndf <- unique(s.rums[ cnd.gt.hi.ndf , 'ue.id'])
   
   # Treatment Id lists
-  d.gbr[gbm.cond.shp.lo.ndf  , 'treatment.IDs'] <- list(list(  unique(s.rums[ cnd.sp.lo.ndf , 'ut.id'])  ))
-  d.gbr[gbm.cond.shp.hi.ndf  , 'treatment.IDs'] <- list(list(unique(s.rums[ cnd.sp.hi.ndf, 'ut.id'])))
+  d.gbr[gbm.cond.shp.lo.ndf  , 'all.treatment.IDs'] <- list(list(  unique(s.rums[ cnd.sp.lo.ndf , 'ut.id'])  ))
+  d.gbr[gbm.cond.shp.hi.ndf  , 'all.treatment.IDs'] <- list(list(unique(s.rums[ cnd.sp.hi.ndf, 'ut.id'])))
   
-  d.gbr[gbm.cond.gt.lo.ndf , 'treatment.IDs'] <- list(list(unique(s.rums[ cnd.gt.lo.ndf , 'ut.id'])))
-  d.gbr[gbm.cond.gt.hi.ndf  , 'treatment.IDs'] <- list(list(unique(s.rums[ cnd.gt.hi.ndf, 'ut.id'])))
+  d.gbr[gbm.cond.gt.lo.ndf , 'all.treatment.IDs'] <- list(list(unique(s.rums[ cnd.gt.lo.ndf , 'ut.id'])))
+  d.gbr[gbm.cond.gt.hi.ndf  , 'all.treatment.IDs'] <- list(list(unique(s.rums[ cnd.gt.hi.ndf, 'ut.id'])))
   
   # Experiment Id lists
-  d.gbr[gbm.cond.shp.lo.ndf  , 'experiment.IDs'] <- list(list(  s.rums[ cnd.sp.lo.ndf , 'ue.id'])  )
-  d.gbr[gbm.cond.shp.hi.ndf  , 'experiment.IDs'] <- list(list(s.rums[ cnd.sp.hi.ndf, 'ue.id']))
+  d.gbr[gbm.cond.shp.lo.ndf  , 'all.experiment.IDs'] <- list(list(  s.rums[ cnd.sp.lo.ndf , 'ue.id'])  )
+  d.gbr[gbm.cond.shp.hi.ndf  , 'all.experiment.IDs'] <- list(list(s.rums[ cnd.sp.hi.ndf, 'ue.id']))
   
-  d.gbr[gbm.cond.gt.lo.ndf , 'experiment.IDs'] <- list(list(s.rums[ cnd.gt.lo.ndf , 'ue.id']))
-  d.gbr[gbm.cond.gt.hi.ndf  , 'experiment.IDs'] <- list(list(s.rums[ cnd.gt.hi.ndf, 'ue.id']))
+  d.gbr[gbm.cond.gt.lo.ndf , 'all.experiment.IDs'] <- list(list(s.rums[ cnd.gt.lo.ndf , 'ue.id']))
+  d.gbr[gbm.cond.gt.hi.ndf  , 'all.experiment.IDs'] <- list(list(s.rums[ cnd.gt.hi.ndf, 'ue.id']))
   
   
   # Sample sizes per species-ndf level
@@ -358,7 +366,7 @@
     
   }
   
-  for (r in 1:nrow(d.gbr)) { d.gbr[ r, 'IDs.remaining'] <- list(list( d.gbr[ r, 'treatment.IDs'])) }
+ # for (r in 1:nrow(d.gbr)) { d.gbr[ r, 'IDs.remaining'] <- list(list( d.gbr[ r, 'treatment.IDs'])) }
   
   
 } # Data pre processing

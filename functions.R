@@ -460,7 +460,7 @@ observed.tformd <-  d[,  form.lhs  ]
 
 
 
-gen.glm.model <<- function(  data , form   , mod.v      ){
+gen.reg.model <<- function(  data , form   , mod.v      ){
   
   test <- function(){
     
@@ -523,14 +523,13 @@ if (  cur.type.index == 1  ){
 if (  1 ==  1){ 
   
   model <- glmboost( 
-    
+  
     form  
-    
     , data =  data
     
-    , family =  family
-    ,  control = boost_control(mstop =   mstop, nu = nu)
-    , center = FALSE
+   # , family =  family
+   # ,  control = boost_control(mstop =   mstop, nu = nu)
+   # , center = FALSE
     
   )
   
@@ -590,6 +589,11 @@ if (  cur.type.index == 2){
     
 
     if (  1 ==  1){ 
+      
+      model <- lmer(
+        form  
+        
+      )
       
       model <- glmboost( 
         
@@ -656,9 +660,7 @@ if (  cur.type.index == 2){
   }  # Other type
   
   
-  
-  
-  
+
   return.item <- c( listify(model) ,  mstop ,   nu )
  
   return ( return.item )
@@ -869,6 +871,7 @@ gbr.out <<- function(){
     
   )
   
+  cols.fold.sets <- c()
 
   
   cols.2.export <- colnames(d.gbr)[ which( !(colnames(d.gbr) %in% cols.not.2.export) )  ]
@@ -892,18 +895,29 @@ gbr.out <<- function(){
     
   }
   
-  d.export.sheep.lon <- d.export[ d.export$species  == "Sheep" & d.export$ndf == ndf.lev.lo , cols.2.export ]
-  d.export.sheep.hin <- d.export[ d.export$species  == "Sheep" & d.export$ndf == ndf.lev.hi  , cols.2.export ]
+  d.export.sheep.lon.all <- d.export[ d.export$species  == "Sheep" & d.export$ndf == ndf.lev.lo , cols.2.export ]
+  d.export.sheep.hin.all <- d.export[ d.export$species  == "Sheep" & d.export$ndf == ndf.lev.hi  , cols.2.export ]
  # d.export.goat.lon <- d.gbr[ d.export$species  == "Goat" & d.export$ndf == ndf.lev.lo , cols.2.export ]
  # d.export.goat.hin <- d.gbr[ d.export$species  == "Goat" & d.export$ndf == ndf.lev.hi , cols.2.export ]
   
 
+  d.export.sheep.lon.fold.sets <- d.export.sheep.lon.all[ ,fold.cond.variables.all ]
+  d.export.sheep.hin.fold.sets <- d.export.sheep.hin.all[ ,fold.cond.variables.all ]
   
-  write.xlsx(  d.export.sheep.lon , "Figures.out/gbr_out_sheep_lon.xlsx")
-  write.xlsx( d.export.sheep.hin , "Figures.out/gbr_out_sheep_hin.xlsx")
+
+  write.xlsx(  d.export.sheep.lon , str_c(results.out.dir , "gbr_out_sheep_lon.xlsx") )
+  write.xlsx( d.export.sheep.hin , str_c(results.out.dir , "gbr_out_sheep_hin.xlsx"))
   #write.xlsx( d.export.goat.lon, "Figures.out/gbr_out_goat_lon.xlsx")
  # write.xlsx(d.export.goat.hin, "Figures.out/gbr_out_goat_hin.xlsx")
   
+  
+  write.xlsx(   d.export.sheep.lon.fold.sets , str_c(results.out.dir , "gbr_out_sheep_lon_fold_sets.xlsx") )
+  write.xlsx( d.export.sheep.hin.fold.sets , str_c(results.out.dir , "gbr_out_sheep_hin.xlsx"))
+  #write.xlsx( d.export.goat.lon, "Figures.out/gbr_out_goat_lon.xlsx")
+  # write.xlsx(d.export.goat.hin, "Figures.out/gbr_out_goat_hin.xlsx")
+  
+  
+ 
 }
 
 

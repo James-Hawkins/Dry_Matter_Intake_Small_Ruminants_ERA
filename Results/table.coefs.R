@@ -213,7 +213,7 @@ gg.coefs.height  <- 4.5* gg.coefs.glob.scalar
 filename.coefs = str_c(results.out.dir , 'coefs.jpeg')
 
 
-ggsave(filename =  filename.coefs,  gg.coefs, width = gg.coefs.width.sp, height = gg.coefs.height.sp   , dpi = gg.coefs.dpi)
+ggsave(filename =  filename.coefs,  gg.coefs, width = gg.coefs.width, height = gg.coefs.height  , dpi = gg.coefs.dpi)
 
 
 
