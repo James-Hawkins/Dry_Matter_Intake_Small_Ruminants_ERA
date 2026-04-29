@@ -18,8 +18,6 @@ threepoint <<- function(x, y, ladder=c(1, 1/2, 1/3, 0, -1/2, -1)) {
   c(lambda, offset)
 }
 
-
-
 optim.tform <<- function( s.rums , variable, species , ndf.level )  {
   
   # variable <- "feed_intake_g_d" ; ndf.level <- ndf.lev.lo ; species <- 'Sheep'
@@ -66,7 +64,6 @@ var.name <- str_c(variable , '.' , transforms[best.tform])
   return (list(  transforms[best.tform] , var.name , shap.tests))
   
 }
-
 
 
 model.sum <<- function( d.frame , c.sp, c.ndf , c.stage){
@@ -396,13 +393,13 @@ gen.eval.metrics <- function( m , form ,d , y  , t.ids , e.ids  ,offset , data.s
   
 test.criteria <- function(){
   
-  row <- 1
+  row <- 28
    m <- model
    form <- formula
-   d <- train.data
-   y <-  train.data[,y.var] 
-   t.ids <- train.ids
-   e.ids <- train.ids.exmt 
+   d <- test.data
+   y <-  test.data[,y.var] 
+   t.ids <- test.ids 
+   e.ids <-  test.ids.exmt 
    offset <- model.offset
    
 }
@@ -426,13 +423,16 @@ observed.tformd <-  d[,  form.lhs  ]
   tss <- sum( (y - mean(y))^2 )
   r2 <- 1 -  rss/ tss
   
+  
+  x.vars <- de.listify(return.x.vars(form , data.set.type , row))[[1]] 
 
-  k <- length(labels(terms(form)))
-  n <- nrow(train.data)
+  k <- length(x.vars) 
+  n <- sum(d$Sample.size)
   
-  r2.adj <- 1 - (1 - r2)*(n - 1) / (n - k - 1)
+  r2.adj <-  1 -  rss/ (n - k) / tss / (n-1)  
   
-  
+#  1 - (1 -r2) * ( n -1) /( n - k -1)
+ 
   # WEIGHTED PERFORMANCE METRICS
   weights <- gen.weights( t.ids , e.ids  ) 
   
@@ -450,9 +450,9 @@ observed.tformd <-  d[,  form.lhs  ]
   w.tss <- sum( weights * (y - mean(y))^2 )
   w.r2 <- 1 - w.rss / w.tss
   
-  w.r2.adj <- 1 - (1 - w.r2)*(n - 1) / (n - k - 1)
+  w.r2.adj <- 1 -  w.rss/ (n - k) / w.tss / (n-1)  
   
-  return.item <- c(  listify( r2.adj ) ,  listify(nrmse )  , listify( w.r2.adj ) ,  listify(w.nrmse )  )
+  return.item <- c(  listify( r2 ) ,  listify(nrmse )  , listify( w.r2 ) ,  listify(w.nrmse )  )
   
   return ( return.item   )
   
@@ -700,7 +700,7 @@ gen.formula.label.1r <<- function(  form.obj ){
   
   function(){
     
-    form.obj <- mod.1.sp.lo.ndf 
+    form.obj <- mod.4.sp.lo.ndf 
     
   }
   
@@ -722,23 +722,24 @@ gen.formula.label.1r <<- function(  form.obj ){
   
   # alternatove
   
-  begin <- 'DMI = \u0192( '
+  begin <- '\u0192( '
   end <- ' )'
   comma <- ', '
+  new.line <- '\n'
   
   
   b1 <- gen.var.alias(  all.x.vars[ which( all.x.vars ==  rhs.c.1 )  ]  )
   b2 <- gen.var.alias( all.x.vars[ which( all.x.vars ==  rhs.c.2 )  ] )
-  b3 <- gen.var.alias( all.x.vars[ which( all.x.vars ==  rhs.c.3 )  ] )
   
+  if (  !is.na(rhs.c.3) ){ b3 <- gen.var.alias(  all.x.vars[ which(  all.x.vars ==  rhs.c.3 )  ] )  }
   if (  !is.na(rhs.c.4) ){ b4 <- gen.var.alias(  all.x.vars[ which(  all.x.vars ==  rhs.c.4 )  ] )  }
   if (  !is.na(rhs.c.5) ){ b5 <- gen.var.alias(  all.x.vars[ which(  all.x.vars ==  rhs.c.5 )  ] )  }
   
 
-  lab <- paste0(  begin,   b1 , comma , b2 , comma , b3 )
+  lab <- paste0(  begin,   b1 , comma , b2 )
   
-  if (  is.na(rhs.c.4) ){ lab <- paste0( lab ) } 
-  if (   !is.na(rhs.c.4)  ){  lab <- paste0(  lab , comma , b4 )    }
+  if (   !is.na(rhs.c.3)  ){  lab <- paste0(  lab , comma , b3 )    }
+  if (   !is.na(rhs.c.4) ){    lab <- paste0(  lab , comma , b4 ) } 
   if (   !is.na(rhs.c.5)  ){  lab <- paste0(  lab , comma , b5 )    }
 
   lab <- paste0(  lab , end )
@@ -905,8 +906,8 @@ gbr.out <<- function(){
   d.export.sheep.hin.fold.sets <- d.export.sheep.hin.all[ ,fold.cond.variables.all ]
   
 
-  write.xlsx(  d.export.sheep.lon , str_c(results.out.dir , "gbr_out_sheep_lon.xlsx") )
-  write.xlsx( d.export.sheep.hin , str_c(results.out.dir , "gbr_out_sheep_hin.xlsx"))
+  write.xlsx(    d.export.sheep.lon.all , str_c(results.out.dir , "gbr_out_sheep_lon.xlsx") )
+  write.xlsx( d.export.sheep.hin.all , str_c(results.out.dir , "gbr_out_sheep_hin.xlsx"))
   #write.xlsx( d.export.goat.lon, "Figures.out/gbr_out_goat_lon.xlsx")
  # write.xlsx(d.export.goat.hin, "Figures.out/gbr_out_goat_hin.xlsx")
   
@@ -923,7 +924,7 @@ gbr.out <<- function(){
 
 gen.gg.df.specific <<- function(  cur.mod , vers , species , ndf){
   
-  # cur.mod <- 3; vers <- 'pmetric'
+  # cur.mod <- 2; vers <- 'pmetric'
   # cur.mod <- 1 ; vers <- 'n.pmetric'
   
   
@@ -931,7 +932,7 @@ gen.gg.df.specific <<- function(  cur.mod , vers , species , ndf){
     
     species <- species.sheep
     ndf <- ndf.lev.lo
-    cur.mod <- 3; vers <- 'pmetric'
+    cur.mod <- 2; vers <- 'pmetric'
     
     gbm.cond <- gbm.cond.shp.lo.ndf
     
@@ -966,14 +967,11 @@ gen.gg.df.specific <<- function(  cur.mod , vers , species , ndf){
     gbm.cond.opt.mod <- (  gbm.cond & d.gbr$is.best.model & d.gbr$mod.form == cur.mod)
 
     
-    mod.1.form <-  de.listify( d.gbr[   gbm.cond.opt.mod & d.gbr$mod.form == cur.mod ,  'gbr.form' ] )
+    mod.form <-  de.listify( d.gbr[   gbm.cond.opt.mod & d.gbr$mod.form == cur.mod ,  'form' ] )
 
     
-    mod.1.form.label.w.eqn.s1 <- de.listify( gen.formula.label.1r(mod.1.form ) )[[1]][1]
+    mod.form.label.w.eqn <- de.listify( gen.formula.label.1r(mod.form ) )
 
-    mod.1.form.label.w.eqn.s2 <- de.listify( gen.formula.label.1r(mod.1.form ) )[[1]][2]
-
-    
     # Treatment IDs
     mod.1.u.tid <- de.listify( d.gbr[  gbm.cond.opt.mod  & d.gbr$mod.form == cur.mod  ,  'ws.ut.ids' ] )
 
@@ -1003,7 +1001,7 @@ gen.gg.df.specific <<- function(  cur.mod , vers , species , ndf){
     
     gg.dat.fact.labl.r1.mod.ss <- str_c( model.label , ': n = ' ,  mod.ss)
 
-    gg.dat.fact.labl.r2.mod.ss <- str_c( mod.1.form.label.w.eqn.s1)
+    gg.dat.fact.labl.r2.mod.ss <- str_c( mod.form.label.w.eqn )
 
 
   } # Plot data prep
@@ -1176,7 +1174,7 @@ gen.gg.df.specific <<- function(  cur.mod , vers , species , ndf){
 
 gen.var.alias <- function( var ){
   
-#  var <- x.vars[c(5)]
+#  var <- all.x.vars[c(9)]
   
  # print(paste('current var is', var))
   
@@ -1188,20 +1186,23 @@ gen.var.alias <- function( var ){
  
   new.prefx <- form.aliases[ which( all.x.vars == prefx ) ]
   
+  if ( suffx %in% c(".e25" ,".sqt"   ,  ".e75" ,".sqd"  , ".cbd", ".mean.s" ,   ".min.max.s" )) {
+    
   new.suffx <- suffixes.labs[ which(suffixes == suffx ) ]
-  
-  
   new.lab <- str_c(  new.prefx ,  new.suffx )
-
   
-  } else { 
+  } else if ( suffx %in% c(".log" )) {
+
+    if (suffx == c(".log")){ new.lab <- str_c(  'ln(',  new.prefx,')' ) }
+  
+  }
+  }else { 
     
     new.prefx <- form.aliases[ which( all.x.vars == var ) ]
     
     new.lab <-  new.prefx 
   
-    
-    }
+  }
   
   return (new.lab)
   
@@ -1237,7 +1238,7 @@ assign.best.model <<- function( r.cond  , d.gbr ){
 
 assign.best.model.all.forms <<- function( r.cond  , d.gbr ){
   
-  # test: r.cond <- species.ndf.form.cond.pmetric 
+  # test: r.cond <- ss.form.cond.pmetric 
   
   
   optim.metric <- max( na.omit(  d.gbr[   r.cond,  optimization.metric.var.name.1 ])  )

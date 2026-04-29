@@ -16,8 +16,6 @@ Next steps
 rm(list = ls())
 
 
-save.image('dmi.estm8.RData')
-load('dmi.estm8.RData')
 
 
 # Data prep 
@@ -81,6 +79,7 @@ s.rums[ s.rums$Species == species.goat, 'BW_frac_Mat_BW'] <- s.rums[ s.rums$Spec
   
   
 s.rums$Met_bw_kg <- s.rums$bw_kg ^ 0.75
+
 
 pred.vars <- c( pred.vars ,  'Met_bw_kg' , 'BW_frac_Mat_BW')
 
@@ -402,6 +401,8 @@ frac.cond.1.goats.hi.ndf - unique(length( s.rums[ cond.grad.1.goats.hi.ndf  & co
 
 
 }
+
+
 
 
 View(optim.tform.dat)

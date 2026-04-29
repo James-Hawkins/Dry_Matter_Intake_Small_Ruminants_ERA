@@ -25,9 +25,7 @@ valid.plots.out <-  function() { source(   str_c(  results.dir  ,'valid.plots.R'
 # create keyword for ue.id and ut.id and use consistently
 # replace colnames in d.gbr with global character objects
 # harmonize the handling of lists in and out
-
 # add functionality for greater formula configurations
-
 # plots for variable importance
 
 
@@ -51,7 +49,7 @@ if (r == 1) { d.gbr <- d.gbr.null ; start.time <- Sys.time()}
 
 print(paste('Running iteration ' , r , 'of ', nrow(d.gbr)))
 
-#  r <- 1
+#  r <- 28
 #if (r == 11){ break }
 
 {
@@ -65,13 +63,13 @@ k <-  d.gbr[r,'k']
 mv <- d.gbr[ r, 'mod.vers']
 mf <-  d.gbr[r , 'mod.form']  
 
-r.cnd.species.ndf.mf <-  ( d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf )
-r.cnd.species.ndf.mf.mv <-  ( d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf & d.gbr$mod.vers == mv)
+r.cnd.ss.mf <-  ( d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf )
+r.cnd.ss.mf.mv <-  ( d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf & d.gbr$mod.vers == mv)
 
 
 # Extract complete id cases
 # condition: if first iteration of formula
-if (    any(  is.na(  d.gbr[ r.cnd.species.ndf.mf , vn.t.IDS.CCs ] ) )  ){
+if (    any(  is.na(  d.gbr[ r.cnd.ss.mf , vn.t.IDS.CCs ] ) )  ){
   
 cur.form <- d.gbr[r, 'form'][[1]] 
 
@@ -86,10 +84,10 @@ cur.id.list <- s.rums[s.rums$ue.id %in% cur.id.list , 'ut.id']
 cc.id.list <- listify( gen.complete.cases(    cur.id.list , cur.form    )) 
 
 
-d.gbr[ r.cnd.species.ndf.mf , vn.t.IDS.CCs]  <- cc.id.list
-d.gbr[ r.cnd.species.ndf.mf , vn.t.IDS.CCs.remaining] <- cc.id.list  
+d.gbr[ r.cnd.ss.mf , vn.t.IDS.CCs]  <- cc.id.list
+d.gbr[ r.cnd.ss.mf , vn.t.IDS.CCs.remaining] <- cc.id.list  
 
-d.gbr[r.cnd.species.ndf.mf , 'total.sample.size'] <-  length( de.listify(cc.id.list)[[1]])
+d.gbr[r.cnd.ss.mf , 'total.sample.size'] <-  length( de.listify(cc.id.list)[[1]])
 
 }
 
@@ -151,11 +149,6 @@ sampled.ids <<- sample( ids.remaining ,    ids.to.sample)
 } # Iteration conditions
 
 
-  
-  
-#d.gbr[r, 'fold.t.IDs'] <-  listify( sampled.ids)
-#d.gbr[r, 'fold.t.IDs.length'] <-  length( sampled.ids)
-
 
 all.ids <-   d.gbr[[r, vn.t.IDS.CCs]][  which(( d.gbr[[r, vn.t.IDS.CCs]]  %in% d.gbr[[r, vn.t.IDS.CCs]] ))  ]
 train.ids <-   d.gbr[[r, vn.t.IDS.CCs]][  which(!( d.gbr[[r, vn.t.IDS.CCs]]  %in% sampled.ids))  ]
@@ -173,11 +166,19 @@ d.gbr[r, vn.test.t.IDS.length ] <-   length(test.ids)
 
 
 
+s.rums[ s.rums$ut.id %in% all.ids   , ] 
+
 main.data.r.cond <- d.gbr[r, 'r.cond'][[1]]
 
 all.data <- s.rums[ s.rums$ut.id %in% all.ids   , ]  #main.data.r.cond
 
 d.gbr[r, 'all.data'] <- listify( all.data ) 
+
+total.animal.sample <- 0
+for (s.r in 1:nrow(all.data)){ total.animal.sample <-  total.animal.sample + all.data[s.r , 'Sample.size']   }
+
+d.gbr[r, 'Total.animal.sample'] <- total.animal.sample
+
 
 # Set observed values
 train.data <- all.data[  all.data$ut.id %in%  train.ids, ]
@@ -396,63 +397,62 @@ d.gbr[r, 'test.ccc'] <- ccc$rho.c$est
 if ( k == p.k) {
   
 
-  d.gbr[ r.cnd.species.ndf.mf.mv ,  vn.w.R2.mean ] <- mean(na.omit(d.gbr[ d.gbr$species ==  species & d.gbr$ndf == ndf   , 'test.r2']))
-  d.gbr[r.cnd.species.ndf.mf.mv,  vn.w.nRMSE.mean ] <- mean(na.omit(d.gbr[ d.gbr$species ==  species & d.gbr$ndf == ndf , 'test.nrmse']))
-  d.gbr[r.cnd.species.ndf.mf.mv, vn.w.CCC.mean] <- mean(na.omit(d.gbr[ d.gbr$species ==  species & d.gbr$ndf == ndf , 'test.ccc']))  
-  d.gbr[r.cnd.species.ndf.mf.mv, vn.w.AIC.mean] <- mean(na.omit(d.gbr[ d.gbr$species ==  species & d.gbr$ndf == ndf , 'test.aic']))  
+  d.gbr[ r.cnd.ss.mf.mv ,  vn.w.R2.mean ] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'test.r2']))
+  d.gbr[r.cnd.ss.mf.mv,  vn.w.nRMSE.mean ] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv , 'test.nrmse']))
+  d.gbr[r.cnd.ss.mf.mv, vn.w.CCC.mean] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'test.ccc']))  
+  d.gbr[r.cnd.ss.mf.mv, vn.w.AIC.mean] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv , 'test.aic']))  
   
  
-  d.gbr[r.cnd.species.ndf.mf.mv, vn.w.R2.sd ] <- sd(na.omit(d.gbr[ d.gbr$species ==  species & d.gbr$ndf == ndf , 'test.r2']))
-  d.gbr[r.cnd.species.ndf.mf.mv, vn.w.nRMSE.sd ] <- sd(na.omit(d.gbr[ d.gbr$species ==  species & d.gbr$ndf == ndf , 'test.nrmse']))
-  d.gbr[r.cnd.species.ndf.mf.mv, vn.w.CCC.sd] <- sd(na.omit(d.gbr[ d.gbr$species ==  species & d.gbr$ndf == ndf , 'test.ccc']))  
-  
-  d.gbr[r.cnd.species.ndf.mf.mv, vn.w.AIC.sd ] <- sd(na.omit(d.gbr[ d.gbr$species ==  species & d.gbr$ndf == ndf , 'test.aic']))
+  d.gbr[r.cnd.ss.mf.mv, vn.w.R2.sd ] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'test.r2']))
+  d.gbr[r.cnd.ss.mf.mv, vn.w.nRMSE.sd ] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'test.nrmse']))
+  d.gbr[r.cnd.ss.mf.mv, vn.w.CCC.sd] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv , 'test.ccc']))  
+  d.gbr[r.cnd.ss.mf.mv, vn.w.AIC.sd ] <- sd(na.omit(d.gbr[ d.gbr$species ==  species & d.gbr$ndf == ndf , 'test.aic']))
 
   # Coefficients - means and standard deviations
 
   # Average regression coefficients
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.coef.int'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.int']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.coef.BW'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.BW']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.coef.ADG'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.ADG']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.coef.NDF'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.NDF']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.coef.CP'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.CP']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.coef.NDF_digest'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.NDF_digest']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.coef.int'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.int']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.coef.BW'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.BW']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.coef.ADG'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.ADG']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.coef.NDF'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.NDF']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.coef.CP'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.CP']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.coef.NDF_digest'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.NDF_digest']))
   
   
   # Standard deviation in regression coefficients
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.coef.int'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.int']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.coef.BW'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.BW']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.coef.ADG'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.ADG']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.coef.NDF'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.NDF']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.coef.CP'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.CP']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.coef.NDF_digest'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'coef.NDF_digest']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.coef.int'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.int']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.coef.BW'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.BW']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.coef.ADG'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.ADG']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.coef.NDF'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.NDF']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.coef.CP'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.CP']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.coef.NDF_digest'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'coef.NDF_digest']))
   
   
   # Average feature importance coefficients
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.int'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.int']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.BW'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.BW']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.ADG'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.ADG']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.NDF'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.NDF']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.CP'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.CP']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.NDF_digest'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.NDF_digest']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.int'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.int']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.BW'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.BW']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.ADG'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.ADG']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.NDF'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.NDF']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.CP'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.CP']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.NDF_digest'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.NDF_digest']))
   
   
   # Average feature importance coefficients -- relative
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.rel.int'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.rel.int']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.rel.BW'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.rel.BW']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.rel.ADG'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.rel.ADG']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.rel.NDF'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.rel.NDF']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.rel.CP'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.rel.CP']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'mean.var.imp.rel.NDF_digest'] <- mean(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.rel.NDF_digest']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.rel.int'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.rel.int']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.rel.BW'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.rel.BW']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.rel.ADG'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.rel.ADG']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.rel.NDF'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.rel.NDF']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.rel.CP'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.rel.CP']))
+  d.gbr[ r.cnd.ss.mf.mv , 'mean.var.imp.rel.NDF_digest'] <- mean(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.rel.NDF_digest']))
   
   
   # Standard deviation in feature importance 
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.var.imp.int'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.int']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.var.imp.BW'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.BW']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.var.imp.ADG'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.ADG']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.var.imp.NDF'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.NDF']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.var.imp.CP'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.CP']))
-  d.gbr[ r.cnd.species.ndf.mf.mv , 'sd.var.imp.NDF_digest'] <- sd(na.omit(d.gbr[ r.cnd.species.ndf.mf.mv  , 'var.imp.NDF_digest']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.var.imp.int'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.int']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.var.imp.BW'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.BW']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.var.imp.ADG'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.ADG']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.var.imp.NDF'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.NDF']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.var.imp.CP'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.CP']))
+  d.gbr[ r.cnd.ss.mf.mv , 'sd.var.imp.NDF_digest'] <- sd(na.omit(d.gbr[ r.cnd.ss.mf.mv  , 'var.imp.NDF_digest']))
   
   
 
@@ -470,17 +470,17 @@ if ( k == p.k) {
 # Model identification 1 -- best performing among given formula (i.e. across hyperparameters)
 if ( k == p.k &  mv == col.mod.vers[  length(col.mod.vers )  ]   ) {
   
-  species.ndf.form.cond <- (d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf  )
+  ss.mf.cond <- (d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$mod.form == mf  )
   
   cond.pmetric <-  rep(TRUE, nrow(d.gbr)) #(substr(d.gbr$mod.vers , 1 ,1 ) == 1)
  # cond.n.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 2)
   
-  species.ndf.form.cond.pmetric <- species.ndf.form.cond & cond.pmetric
+  ss.form.cond.pmetric <- ss.mf.cond & cond.pmetric
  # species.ndf.form.cond.n.pmetric <- species.ndf.form.cond & cond.n.pmetric
   
   # Parametric model
 
-  d.gbr <- assign.best.model(species.ndf.form.cond.pmetric , d.gbr )
+  d.gbr <- assign.best.model(  ss.form.cond.pmetric  , d.gbr )
  # d.gbr <- assign.best.model(species.ndf.form.cond.n.pmetric , d.gbr)
 
 
@@ -489,16 +489,16 @@ if ( k == p.k &  mv == col.mod.vers[  length(col.mod.vers )  ]   ) {
 # Model identification 2 -- best performing among all formula (i.e. across hyperparameters and formulae)
 if ( k == p.k & mv == col.mod.vers[  length(col.mod.vers )  ] & mf == n.mod.form  ) {
   
-  species.ndf.best.mod.cond <- (d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$is.best.model  )
+  ss.best.mod.cond <- (d.gbr$species == species & d.gbr$ndf == ndf & d.gbr$is.best.model  )
   
   cond.pmetric <-  cond.pmetric <-  rep(TRUE, nrow(d.gbr)) #(substr(d.gbr$mod.vers , 1 ,1 ) == 1) (substr(d.gbr$mod.vers , 1 ,1 ) == 1)
 #cond.n.pmetric <- (substr(d.gbr$mod.vers , 1 ,1 ) == 2)
   
-  species.ndf.form.cond.pmetric <- species.ndf.best.mod.cond  & cond.pmetric
+  ss.form.cond.pmetric <- ss.best.mod.cond  & cond.pmetric
  # species.ndf.form.cond.n.pmetric <- species.ndf.best.mod.cond  & cond.n.pmetric
   
   
-  d.gbr <- assign.best.model.all.forms(species.ndf.form.cond.pmetric , d.gbr )
+  d.gbr <- assign.best.model.all.forms(ss.form.cond.pmetric , d.gbr )
  # d.gbr <- assign.best.model.all.forms(species.ndf.form.cond.n.pmetric , d.gbr)
   
 }

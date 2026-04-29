@@ -223,8 +223,8 @@ suffixes.labs <<-  c(
   , supsc("3/4") 
   , supsc("2") 
   , supsc("3") 
-  , supsc("x") 
-  , supsc("y") 
+  , subsc("MS") 
+  , subsc("MMS") 
   )
 
 

@@ -7,8 +7,8 @@ getwd()
 source('libraries.R') ; source('functions.R') ; source('parameters.R') 
 
 
-
-
+#save.image('dmi.estm8.RData')
+# load('dmi.estm8.RData')
 
 d.raw <<- read_excel( str_c( parent.dir , 'Srum_master_ERA_data.xlsx')
                  , sheet = 'feed_intake_raw' 
@@ -268,7 +268,6 @@ d <- as.data.frame(d.raw)
   d <- data.frame(d)
   
 }
-
 
 
 

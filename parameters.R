@@ -59,6 +59,7 @@ gbr.reg.variables <<- c(
   , 'ndf.level'
   , 'species.ndf'
   , "T.Animals"  
+  , 'Sample.size'
   
   , "B.Code" 
   ,   "A.Level.Name" 

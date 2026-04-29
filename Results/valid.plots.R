@@ -2,6 +2,8 @@
 
 print(' Creating validation plots ')
 
+# source('valid.plots.R')
+
 #   source(str_c(results.dir , 'valid.plots.R'))
 
 # ---- PLOTS -------
@@ -19,8 +21,8 @@ print(' Creating validation plots ')
 
 
 {
-  gg.valid.y.tit <<- 'Predicted DMI (g/d)'  
-  gg.valid.x.tit <<- 'Measured DMI (g/d)'  
+  gg.valid.x.tit <<- 'Predicted DMI (g/d)'  
+  gg.valid.y.tit <<- 'Measured DMI (g/d)'  
   
   
   gg.resid.y.tit <<- 'Residuals (g/d)'
@@ -83,6 +85,8 @@ print(' Creating validation plots ')
       
       , axis.text.x = element_text( angle = 90 , hjust = 1 , vjust = 0.5 , size = 10.5)
       , axis.text.y = element_text( hjust = 1 , vjust = 0.5 , size = 10.5)
+      
+      , legend.background = element_rect(fill = "transparent", color = NA)
     ) 
   
   gg.valid.pnt.size <<- 1
@@ -102,7 +106,7 @@ print(' Creating validation plots ')
     
     plot <- gg.y.valid.theme   %>% +
       #  ggplot() + 
-      geom_point( data = dat  ,  aes(x = observed , y = modelled), size = gg.valid.pnt.size ,  color = gg.valid.pnt.colr ) +
+      geom_point( data = dat  ,  aes(y = observed , x = modelled), size = gg.valid.pnt.size ,  color = gg.valid.pnt.colr ) +
       
       
       ggh4x::facet_nested( 
@@ -111,7 +115,7 @@ print(' Creating validation plots ')
         
       ) +
       geom_line(data = data.frame(x = c(-Inf, Inf), y = c(-Inf, Inf)), 
-                aes(x = x, y = y   , color = "y = x")) + 
+                aes(x = x, y = y   , color = "y = x"), linetype = 'solid') + 
       # geom_abline( aes(  x = y , y = x ,  color = 'Predicted = Observed') , linetype = "solid") +
       geom_smooth(data = dat  ,  aes(x = observed , y = modelled , color = 'Best fit' ), method="lm", se=FALSE , size = .6 , linetype = 'solid') +
       # LABELS
@@ -148,18 +152,19 @@ print(' Creating validation plots ')
         #  strip.text = element_markdown(hjust = 0.5)
         # strip.x ==  strip_nested(size = "variable")
         legend.position = 'inside'
-        , legend.position.inside = c(0.15, 0.875)
+        , legend.position.inside = c(0.075, 0.835)
         , legend.title = element_blank()
       ) + # + scale_color_manual(values = c( "LOBF" = "red")) +
       scale_color_manual(
         name = ''
         , values =   c( 
-          "Best fit" = "#8EC5FF"
-          , "y = x"  = 'black'
+          "y = x"  = 'black'
+          ,   "Best fit" = "#8EC5FF"
         ) 
         , breaks = c(
-          "Best fit"
-          ,  'y = x'
+          'y = x'
+          , "Best fit"
+          
         )) +
       guides(color = guide_legend(override.aes = list( ncol = 2 , linetype = c(1, 1))))+
       guides(color = guide_legend(nrow = 2))

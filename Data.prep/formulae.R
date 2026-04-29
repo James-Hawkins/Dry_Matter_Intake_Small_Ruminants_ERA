@@ -84,7 +84,8 @@
     var.imps <- as.numeric(  varimp(scope.model )  )
     var.imps.ordered <- sort(var.imps, decreasing = TRUE)
     
-    
+    summary(scope.model)
+    varimp(scope.model)
     
     names[which( var.imps == var.imps.ordered[1] ) ]
     names[which( var.imps == var.imps.ordered[2] ) ]
@@ -99,10 +100,10 @@
   
   
   
-  mod.1.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg + adg_g_day  )
-  mod.2.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg + adg_g_day + NDF_nutrition )
-  mod.3.sp.lo.ndf <- as.formula(  feed_intake_g_d  ~  bw_kg + adg_g_day +  NDF_nutrition   )
-  mod.4.sp.lo.ndf <- as.formula(   feed_intake_g_d  ~ bw_kg + adg_g_day + NDF_nutrition + CP_nutrition + NDF_digest  )
+  mod.1.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg + adg_g_day  + NDF_nutrition)
+  mod.2.sp.lo.ndf <- as.formula(   feed_intake_g_d ~  bw_kg + adg_g_day + CP_nutrition )
+  mod.3.sp.lo.ndf <- as.formula(  feed_intake_g_d  ~  bw_kg + adg_g_day +  NDF_nutrition + CP_nutrition  )
+  mod.4.sp.lo.ndf <- as.formula(   feed_intake_g_d  ~ bw_kg + adg_g_day.cbd + adg_g_day.log + NDF_nutrition.cbd  )
   
   mod.1.sp.hi.ndf <- mod.1.sp.lo.ndf
   mod.2.sp.hi.ndf <- mod.2.sp.lo.ndf
